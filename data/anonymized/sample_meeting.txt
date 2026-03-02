@@ -1,0 +1,14 @@
+Meeting Notes — 2024-12-10
+
+Attendees: [Person 1], [Person 2], [Person 3]
+
+[Person 4] opened the meeting at Google Munich. She discussed the new API rollout
+with [Person 5], who raised concerns about the timeline. [Person 6] mentioned that the
+[Location 1] office had already started testing.
+
+Action items:
+- Alice to send updated specs to [Email 1]
+- Bob to schedule a follow-up with the [Location 1] team
+- Carol to prepare the demo for the [Location 2] presentation
+
+Next meeting: 2024-12-17 at 10:00 CET

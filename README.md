@@ -25,6 +25,16 @@ eval/             Evaluation harness, metrics, results
 docs/             Architecture docs, requirements, DSR changelog
 ```
 
+## PII Anonymization
+
+Place raw business artifacts in `data/raw/`, then run:
+
+```bash
+uv run python -m src.common.anonymize_files
+```
+
+Anonymized files are written to `data/anonymized/`. Already-processed files are skipped.
+
 ## Stack
 
 Python 3.13 · Mistral AI (via LiteLLM) · Microsoft Presidio · uv
