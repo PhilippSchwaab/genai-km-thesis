@@ -1,6 +1,10 @@
 # IDE
 .idea/
 
+# Thesis — raw data contains PII (never commit)
+data/raw/*
+!data/raw/.gitkeep
+
 # Python
 # Byte-compiled / optimized / DLL files
 __pycache__/
