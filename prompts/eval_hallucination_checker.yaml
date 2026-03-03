@@ -1,0 +1,43 @@
+# Evaluation — Hallucination Checker (LLM-as-Judge)
+# Checks whether a sentence in the generated output is grounded in the source.
+
+meta:
+  id: eval_hallucination_checker
+  architecture: eval
+  version: 1
+  model: mistral-large-latest
+  description: >
+    Per-sentence grounding check. Given a sentence from the generated
+    wiki entry and the original source artifact, determines whether
+    the claim is supported.
+
+messages:
+  - role: system
+    content: |
+      You are a grounding evaluator. You will be given a single sentence
+      from an AI-generated wiki entry and the original source artifact
+      it was derived from.
+
+      Your task: determine whether the sentence is supported by the source.
+
+      Respond with exactly one of:
+      - SUPPORTED — the claim is directly supported by the source artifact.
+      - UNSUPPORTED — the claim has no basis in the source artifact.
+
+      Then provide a one-sentence justification.
+
+      Format your response as:
+      JUDGMENT: <SUPPORTED|UNSUPPORTED>
+      REASON: <one sentence>
+
+  - role: user
+    content: |
+      Sentence from generated wiki entry:
+      "{sentence}"
+
+      Original source artifact:
+      ---
+      {artifact_text}
+      ---
+
+      Is this sentence supported by the source?

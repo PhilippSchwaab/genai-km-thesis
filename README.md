@@ -49,6 +49,27 @@ Or validate a single file:
 uv run python -m src.common.validate_kips data/kips/sample_meeting.json
 ```
 
+## Prompt Library
+
+Versioned YAML prompts in `prompts/`. Load artifacts and render in one go:
+
+```python
+from src.common.prompts import load_prompt, load_artifacts
+
+bundle = load_artifacts("sample_meeting.txt", "chat_sprint42.txt")  # from data/anonymized/
+prompt = load_prompt("pipeline_generate_wiki")
+messages = prompt.render(artifact_type=bundle.artifact_type, artifact_id=bundle.artifact_id, artifact_text=bundle.artifact_text)
+response = litellm.completion(model=prompt.model, messages=messages)
+```
+
+Prompts: `pipeline_generate_wiki`, `agentic_generate_wiki`, `eval_kip_scorer`, `eval_hallucination_checker`.
+
+## Tests
+
+```bash
+uv run pytest -v          # no API key required
+```
+
 ## Stack
 
 Python 3.13 · Mistral AI (via LiteLLM) · Microsoft Presidio · uv

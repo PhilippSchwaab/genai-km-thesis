@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from presidio_analyzer import AnalyzerEngine, RecognizerResult
@@ -46,9 +48,6 @@ def _analyze_by_paragraph(text: str, language: str) -> list[RecognizerResult]:
     """Analyze each paragraph independently to prevent cross-paragraph NER merges."""
     analyzer = _get_analyzer()
     all_results: list[RecognizerResult] = []
-
-    for m in _PARAGRAPH_SEP.finditer(text):
-        pass  # just to check if there are paragraphs
 
     parts = _PARAGRAPH_SEP.split(text)
     if len(parts) <= 1:
