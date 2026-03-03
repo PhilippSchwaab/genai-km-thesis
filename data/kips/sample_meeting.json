@@ -1,0 +1,52 @@
+{
+  "artifact_id": "sample_meeting",
+  "artifact_type": "meeting_transcript",
+  "extracted_by": "Philipp Schwaab",
+  "validated_by": null,
+  "extraction_date": "2026-03-03",
+  "validation_date": null,
+  "kips": [
+    {
+      "id": "KIP-001",
+      "text": "New API rollout was the main discussion topic of the meeting",
+      "category": "decision",
+      "source_hint": "line 5"
+    },
+    {
+      "id": "KIP-002",
+      "text": "[Person 5] raised concerns about the API rollout timeline",
+      "category": "blocker",
+      "source_hint": "line 6"
+    },
+    {
+      "id": "KIP-003",
+      "text": "[Location 1] office had already started testing the new API",
+      "category": "decision",
+      "source_hint": "lines 6-7"
+    },
+    {
+      "id": "KIP-004",
+      "text": "Alice assigned to send updated specs to [Email 1]",
+      "category": "action_item",
+      "source_hint": "line 10"
+    },
+    {
+      "id": "KIP-005",
+      "text": "Bob assigned to schedule a follow-up with the [Location 1] team",
+      "category": "action_item",
+      "source_hint": "line 11"
+    },
+    {
+      "id": "KIP-006",
+      "text": "Carol assigned to prepare the demo for the [Location 2] presentation",
+      "category": "action_item",
+      "source_hint": "line 12"
+    },
+    {
+      "id": "KIP-007",
+      "text": "Next meeting scheduled for 2024-12-17 at 10:00 CET",
+      "category": "deadline",
+      "source_hint": "line 14"
+    }
+  ]
+}

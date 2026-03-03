@@ -10,6 +10,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "spacy>=3.8,<4",
     "en-core-web-lg>=3.8,<4",
+    "jsonschema[format]>=4.23",
 ]
 
 [tool.uv.sources]

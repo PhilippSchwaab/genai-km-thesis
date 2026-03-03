@@ -35,6 +35,20 @@ uv run python -m src.common.anonymize_files
 
 Anonymized files are written to `data/anonymized/`. Already-processed files are skipped.
 
+## KIP Validation
+
+Validate all KIP files in `data/kips/` against the schema:
+
+```bash
+uv run python -m src.common.validate_kips
+```
+
+Or validate a single file:
+
+```bash
+uv run python -m src.common.validate_kips data/kips/sample_meeting.json
+```
+
 ## Stack
 
 Python 3.13 · Mistral AI (via LiteLLM) · Microsoft Presidio · uv

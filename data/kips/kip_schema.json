@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KIP Registry",
+  "description": "Gold-standard Key Information Points extracted manually from a single anonymized artifact. Each KIP is an atomic, verifiable fact that a wiki entry should capture.",
+  "type": "object",
+  "required": ["artifact_id", "artifact_type", "extracted_by", "extraction_date", "kips"],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Unique identifier matching the filename in data/anonymized/ (without extension).",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "examples": ["meeting-2026-03-15", "chat-sprint-42", "commits-2026-q1"]
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["meeting_transcript", "chat_log", "commit_history", "wiki_page", "work_item", "personal_notes"],
+      "description": "Source system category of the original artifact."
+    },
+    "extracted_by": {
+      "type": "string",
+      "description": "Person who manually extracted the KIPs."
+    },
+    "validated_by": {
+      "type": ["string", "null"],
+      "description": "Domain expert who reviewed the KIPs. Null if not yet validated.",
+      "default": null
+    },
+    "extraction_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date when extraction was performed.",
+      "examples": ["2026-04-08"]
+    },
+    "validation_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "ISO 8601 date when domain expert validated. Null if not yet validated.",
+      "default": null
+    },
+    "kips": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of extracted Key Information Points.",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "category"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^KIP-\\d{3}$",
+            "description": "Sequential identifier scoped to this artifact (KIP-001, KIP-002, ...)."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 10,
+            "description": "The atomic fact, stated as a concise declarative sentence."
+          },
+          "category": {
+            "type": "string",
+            "enum": ["decision", "action_item", "deadline", "blocker"],
+            "description": "Semantic category of the fact. Kept minimal for Phase 1; extend if needed during extraction."
+          },
+          "source_hint": {
+            "type": ["string", "null"],
+            "description": "Optional rough location in the artifact (e.g., 'line 42', 'paragraph 3'). Aids traceability during scoring.",
+            "default": null
+          }
+        }
+      }
+    }
+  }
+}
