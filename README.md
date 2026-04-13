@@ -25,44 +25,21 @@ eval/             Evaluation harness, metrics, results
 docs/             Architecture docs, requirements, DSR changelog
 ```
 
-## PII Anonymization
+## CLI
 
-Place raw business artifacts in `data/raw/`, then run:
-
-```bash
-uv run python -m src.common.anonymize_files
-```
-
-Anonymized files are written to `data/anonymized/`. Already-processed files are skipped.
-
-## KIP Validation
-
-Validate all KIP files in `data/kips/` against the schema:
+All commands are available via the `km` entry point:
 
 ```bash
-uv run python -m src.common.validate_kips
+km --help                # show all commands
+km anonymize             # redact PII: data/raw/ → data/anonymized/
+km generate --arch pipeline sample_meeting.txt   # generate wiki entry
+km evaluate --run-dir runs/2026-04-13/           # run eval suite
+km validate              # validate all KIPs against schema
+km validate data/kips/sample_meeting.json        # validate a single file
+km prompts               # list available prompt templates
 ```
 
-Or validate a single file:
-
-```bash
-uv run python -m src.common.validate_kips data/kips/sample_meeting.json
-```
-
-## Prompt Library
-
-Versioned YAML prompts in `prompts/`. Load artifacts and render in one go:
-
-```python
-from src.common.prompts import load_prompt, load_artifacts
-
-bundle = load_artifacts("sample_meeting.txt", "chat_sprint42.txt")  # from data/anonymized/
-prompt = load_prompt("pipeline_generate_wiki")
-messages = prompt.render(artifact_type=bundle.artifact_type, artifact_id=bundle.artifact_id, artifact_text=bundle.artifact_text)
-response = litellm.completion(model=prompt.model, messages=messages)
-```
-
-Prompts: `pipeline_generate_wiki`, `agentic_generate_wiki`, `eval_kip_scorer`, `eval_hallucination_checker`.
+> If `km` is not on your PATH, use `uv run km` instead.
 
 ## Tests
 
