@@ -1,21 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "KIP Registry",
-  "description": "Gold-standard Key Information Points extracted manually from a single anonymized artifact. Each KIP is an atomic, verifiable fact that a wiki entry should capture.",
+  "description": "Gold-standard Key Information Points extracted manually from a single anonymized artifact. Each KIP is an atomic, verifiable, documentation-relevant fact that a wiki entry should capture.",
   "type": "object",
   "required": ["artifact_id", "artifact_type", "extracted_by", "extraction_date", "kips"],
   "additionalProperties": false,
   "properties": {
     "artifact_id": {
       "type": "string",
-      "description": "Unique identifier matching the filename in data/anonymized/ (without extension).",
-      "pattern": "^[a-z0-9][a-z0-9_-]*$",
-      "examples": ["meeting-2026-03-15", "chat-sprint-42", "commits-2026-q1"]
+      "description": "Control Set identifier (e.g., 'cs-06').",
+      "pattern": "^cs-\\d{2}$",
+      "examples": ["cs-04", "cs-05", "cs-06"]
     },
     "artifact_type": {
       "type": "string",
-      "enum": ["meeting_transcript", "chat_log", "commit_history", "wiki_page", "work_item", "personal_notes"],
-      "description": "Source system category of the original artifact."
+      "enum": ["dev_compilation", "support_report"],
+      "description": "Artifact type as defined in the Control Set decisions document."
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Filename in data/anonymized/ (without path).",
+      "examples": ["CS-06_Testing_Strategy_compiled.md"]
     },
     "extracted_by": {
       "type": "string",
@@ -30,7 +35,7 @@
       "type": "string",
       "format": "date",
       "description": "ISO 8601 date when extraction was performed.",
-      "examples": ["2026-04-08"]
+      "examples": ["2026-04-16"]
     },
     "validation_date": {
       "type": ["string", "null"],
@@ -38,13 +43,17 @@
       "description": "ISO 8601 date when domain expert validated. Null if not yet validated.",
       "default": null
     },
+    "narrative_summary": {
+      "type": "string",
+      "description": "One-sentence summary of the workstream narrative arc (Step 2 of extraction procedure)."
+    },
     "kips": {
       "type": "array",
       "minItems": 1,
       "description": "List of extracted Key Information Points.",
       "items": {
         "type": "object",
-        "required": ["id", "text", "category"],
+        "required": ["id", "text", "category", "source_ref"],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -59,13 +68,18 @@
           },
           "category": {
             "type": "string",
-            "enum": ["decision", "action_item", "deadline", "blocker"],
-            "description": "Semantic category of the fact. Kept minimal for Phase 1; extend if needed during extraction."
+            "enum": ["DEC", "IMP", "FIX", "RAT", "CFG", "DEP", "ISS", "RES", "TEC", "BLK"],
+            "description": "KIP category code per the extraction guideline. DEC=Design Decision, IMP=Implementation Action, FIX=Bug Fix, RAT=Rationale, CFG=Configuration/Infrastructure, DEP=Dependency Change, ISS=Issue/Problem, RES=Resolution, TEC=Technical Detail, BLK=Blocker/Constraint."
           },
-          "source_hint": {
-            "type": ["string", "null"],
-            "description": "Optional rough location in the artifact (e.g., 'line 42', 'paragraph 3'). Aids traceability during scoring.",
-            "default": null
+          "source_ref": {
+            "type": "string",
+            "description": "Traceable reference to evidence in the artifact. Format: 'commit:<hash>' | 'PR#<number>' | 'WI:AB#<id>' | 'inferred:<hash1>,<hash2>' with justification.",
+            "examples": ["commit:27bbf4f", "PR#354", "WI:AB#3651", "inferred:ce26c70,79a4931"]
+          },
+          "implicit": {
+            "type": "boolean",
+            "default": false,
+            "description": "True if the KIP is inferred from a pattern of changes rather than stated explicitly in any single source."
           }
         }
       }

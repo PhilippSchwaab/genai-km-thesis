@@ -43,6 +43,7 @@ _TYPE_HINTS: dict[str, str] = {
     "chat": "chat_log",
     "commit": "commit_history",
     "commits": "commit_history",
+    "compiled": "development_activity",
     "wiki": "wiki_page",
     "workitem": "work_item",
     "notes": "personal_notes",
