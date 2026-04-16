@@ -32,7 +32,7 @@ _RESULTS_DIR = _PROJECT_ROOT / "eval" / "results"
 # ── Strands tool definitions ────────────────────────────────────────────
 # These are lightweight Python functions the agent can call during its
 # reasoning loop.  They receive and return plain strings so the agent
-# can inspect intermediate artefacts.
+# can inspect intermediate artifacts.
 
 _SOURCE_TEXT: str = ""  # set per-run so tools can access the source
 
