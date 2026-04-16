@@ -5,7 +5,7 @@ meta:
   id: agentic_generate_wiki
   architecture: agentic
   version: 1
-  model: mistral-large-latest
+  model: mistral/mistral-large-latest
   description: >
     System prompt for the agentic workflow. The agent iterates over the
     artifact, extracts facts, drafts a wiki entry, then self-reviews for

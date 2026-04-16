@@ -5,7 +5,7 @@ meta:
   id: eval_hallucination_checker
   architecture: eval
   version: 1
-  model: mistral-large-latest
+  model: mistral/mistral-large-latest
   description: >
     Per-sentence grounding check. Given a sentence from the generated
     wiki entry and the original source artifact, determines whether

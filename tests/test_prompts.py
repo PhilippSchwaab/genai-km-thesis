@@ -87,10 +87,10 @@ class TestGuessArtifactType:
 
 class TestLoadArtifacts:
     def test_load_single_file(self):
-        bundle = load_artifacts("sample_meeting.txt")
+        bundle = load_artifacts("CS-06_Testing_Strategy_compiled.md")
         assert len(bundle.artifacts) == 1
-        assert bundle.artifact_id == "sample_meeting"
-        assert bundle.artifact_type == "meeting_transcript"
+        assert "CS-06" in bundle.artifact_id
+        assert bundle.artifact_type == "development_activity"
         assert len(bundle.artifact_text) > 0
 
     def test_load_nonexistent_raises(self):

@@ -5,7 +5,7 @@ meta:
   id: pipeline_generate_wiki
   architecture: pipeline
   version: 1
-  model: mistral-large-latest
+  model: mistral/mistral-large-latest
   description: >
     Single-pass generation prompt for Architecture A.
     Takes an anonymized artifact and produces a structured wiki entry.
