@@ -1,0 +1,131 @@
+{
+  "artifact_id": "cs-04",
+  "artifact_type": "dev_compilation",
+  "source_file": "CS-04_Infrastructure_and_Deployment_compiled.md",
+  "extracted_by": "claude-assisted-draft",
+  "validated_by": null,
+  "extraction_date": "2026-04-16",
+  "validation_date": null,
+  "narrative_summary": "Onboarding onto an existing project: stabilizing the codebase with unit tests, adopting Kustomize for deployment, setting up staging infrastructure, and hardening credential management.",
+  "kips": [
+    {
+      "id": "KIP-001",
+      "text": "Unit tests were added for CSV processing classes and order mapping",
+      "category": "IMP",
+      "source_ref": "commit:af524da",
+      "implicit": false
+    },
+    {
+      "id": "KIP-002",
+      "text": "Logging issues were fixed across the sync commands",
+      "category": "FIX",
+      "source_ref": "commit:af524da",
+      "implicit": false
+    },
+    {
+      "id": "KIP-003",
+      "text": "A README with developer documentation was created for the project",
+      "category": "IMP",
+      "source_ref": "commit:1b64323",
+      "implicit": false
+    },
+    {
+      "id": "KIP-004",
+      "text": "A DisplayConfigCommand CLI command was added for inspecting runtime configuration",
+      "category": "IMP",
+      "source_ref": "inferred:1b64323,54f0b02",
+      "implicit": true
+    },
+    {
+      "id": "KIP-005",
+      "text": "Kubernetes secrets loading was added to deployment templates for credential injection",
+      "category": "CFG",
+      "source_ref": "commit:1b64323",
+      "implicit": false
+    },
+    {
+      "id": "KIP-006",
+      "text": "Kustomize was adopted for Kubernetes deployment configuration management",
+      "category": "DEC",
+      "source_ref": "commit:54f0b02",
+      "implicit": false
+    },
+    {
+      "id": "KIP-007",
+      "text": "A Kustomize base layer was created with CronJob definitions and shared configuration",
+      "category": "CFG",
+      "source_ref": "commit:54f0b02",
+      "implicit": false
+    },
+    {
+      "id": "KIP-008",
+      "text": "Deprecated legacy staging deployment files were removed after Kustomize adoption",
+      "category": "CFG",
+      "source_ref": "commit:6db7a94",
+      "implicit": false
+    },
+    {
+      "id": "KIP-009",
+      "text": "Initial deployment file changes had to be reverted because they diverged too far from main before Kustomize was in place",
+      "category": "RAT",
+      "source_ref": "inferred:fb836a7,af4e2d1",
+      "implicit": true
+    },
+    {
+      "id": "KIP-010",
+      "text": "The project shifted from a custom StorageClass to the cluster's built-in StorageClass",
+      "category": "DEC",
+      "source_ref": "inferred:b8bb38a,ae4873b",
+      "implicit": true
+    },
+    {
+      "id": "KIP-011",
+      "text": "ACR secret management was removed from the application and delegated to the cluster",
+      "category": "CFG",
+      "source_ref": "commit:83f7507",
+      "implicit": false
+    },
+    {
+      "id": "KIP-012",
+      "text": "credentials-secret.yaml was renamed to credentials-secret.yaml.example and the original was added to .gitignore",
+      "category": "CFG",
+      "source_ref": "commit:fb7269b",
+      "implicit": false
+    },
+    {
+      "id": "KIP-013",
+      "text": "Separate Kustomize overlays were created for production and staging environments",
+      "category": "CFG",
+      "source_ref": "inferred:cf4b66f,70f7117",
+      "implicit": true
+    },
+    {
+      "id": "KIP-014",
+      "text": "imagePullPolicy was set to IfNotPresent in the deployment configuration",
+      "category": "CFG",
+      "source_ref": "commit:70f7117",
+      "implicit": false
+    },
+    {
+      "id": "KIP-015",
+      "text": "backoffLimit and activeDeadlineSeconds were added to CronJob definitions for resilience",
+      "category": "CFG",
+      "source_ref": "commit:20d9d37",
+      "implicit": false
+    },
+    {
+      "id": "KIP-016",
+      "text": "Billbee API Client was bumped to version 2.4.3",
+      "category": "DEP",
+      "source_ref": "commit:5f6cb6d",
+      "implicit": false
+    },
+    {
+      "id": "KIP-017",
+      "text": "19 integration tests were added in a dedicated test project using Testcontainers and Moq",
+      "category": "IMP",
+      "source_ref": "PR#354",
+      "implicit": false
+    }
+  ]
+}

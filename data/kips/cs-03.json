@@ -1,0 +1,82 @@
+{
+  "artifact_id": "cs-03",
+  "artifact_type": "support_report",
+  "source_file": "CS-03_Tip_Switch_Implementation_report.md",
+  "extracted_by": "claude-assisted-draft",
+  "validated_by": null,
+  "extraction_date": "2026-04-16",
+  "validation_date": null,
+  "narrative_summary": "Implementing a tip switch in production lines L6, L7, and L8 that disables automatic mode and allows machine speed pre-selection.",
+  "kips": [
+    {
+      "id": "KIP-001",
+      "text": "Two new PLC variables were added: a boolean for tip switch status (tipptaster_linie) and a REAL for machine speed selection (db_allgemein.r32._10)",
+      "category": "IMP",
+      "source_ref": "page:5, section:1.1",
+      "implicit": false
+    },
+    {
+      "id": "KIP-002",
+      "text": "The tip switch status variable is located at Data Block 1804, Offset 2, Bit 3, using S7TCP32 driver with Bool data type",
+      "category": "TEC",
+      "source_ref": "page:5, section:1.1",
+      "implicit": false
+    },
+    {
+      "id": "KIP-003",
+      "text": "The machine speed variable is located at Data Block 1804, Offset 160, with setpoint limits of 10 to 200 pcs/min",
+      "category": "TEC",
+      "source_ref": "page:5, section:1.1",
+      "implicit": false
+    },
+    {
+      "id": "KIP-004",
+      "text": "When the tip switch is active, the machine must not be switched to automatic mode",
+      "category": "DEC",
+      "source_ref": "page:5, section:3 (Umsetzung intro)",
+      "implicit": false
+    },
+    {
+      "id": "KIP-005",
+      "text": "A LockMachineAutoMode interlocking function was created combining the machine running state and tip switch status with OR logic",
+      "category": "IMP",
+      "source_ref": "page:6, section:1.2",
+      "implicit": false
+    },
+    {
+      "id": "KIP-006",
+      "text": "Language entries were added in German, English, and Italian for both the machine speed label and the interlocking warning message",
+      "category": "IMP",
+      "source_ref": "page:6, section:1.3",
+      "implicit": false
+    },
+    {
+      "id": "KIP-007",
+      "text": "The Auto mode buttons in the Start and Pop_Favorites screens were modified to use the LockMachineAutoMode interlocking with a warning text",
+      "category": "IMP",
+      "source_ref": "page:7-8, section:1.4 and 1.5",
+      "implicit": false
+    },
+    {
+      "id": "KIP-008",
+      "text": "Machine speed input fields were added to the appropriate machine master data screens with display authorization level 33 and Machine parametrization permission",
+      "category": "IMP",
+      "source_ref": "page:9, section:1.6",
+      "implicit": false
+    },
+    {
+      "id": "KIP-009",
+      "text": "The implementation is identical across all projects covering 12 machine numbers in lines L6, L7, and L8",
+      "category": "TEC",
+      "source_ref": "page:5, section:3 (Umsetzung intro)",
+      "implicit": false
+    },
+    {
+      "id": "KIP-010",
+      "text": "When the tip switch is active, the operator can pre-select a machine speed within the configured setpoint limits",
+      "category": "TEC",
+      "source_ref": "page:5, section:3 (Umsetzung intro)",
+      "implicit": false
+    }
+  ]
+}

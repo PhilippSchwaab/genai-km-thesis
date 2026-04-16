@@ -1,0 +1,89 @@
+{
+  "artifact_id": "cs-06",
+  "artifact_type": "dev_compilation",
+  "source_file": "CS-06_Testing_Strategy_compiled.md",
+  "extracted_by": "claude-assisted-draft",
+  "validated_by": null,
+  "extraction_date": "2026-04-16",
+  "validation_date": null,
+  "narrative_summary": "Replacing an initial shell-script smoke test with a proper C# integration test project using mock fixtures for external dependencies.",
+  "kips": [
+    {
+      "id": "KIP-001",
+      "text": "A shell-script-based smoke test was the initial approach to integration testing",
+      "category": "DEC",
+      "source_ref": "commit:2e9f1a8",
+      "implicit": false
+    },
+    {
+      "id": "KIP-002",
+      "text": "The shell-script smoke test approach was abandoned after repeated debugging revealed it was unreliable",
+      "category": "RAT",
+      "source_ref": "inferred:2e9f1a8,d9f59c2,3caa466,de655a3,27bbf4f",
+      "implicit": true
+    },
+    {
+      "id": "KIP-003",
+      "text": "E2E tests were removed from the project",
+      "category": "DEC",
+      "source_ref": "commit:27bbf4f",
+      "implicit": false
+    },
+    {
+      "id": "KIP-004",
+      "text": "Manual E2E testing steps were documented in the README as a fallback after automated E2E removal",
+      "category": "IMP",
+      "source_ref": "commit:27bbf4f",
+      "implicit": false
+    },
+    {
+      "id": "KIP-005",
+      "text": "A dedicated C# integration test project was created and added to the solution as the replacement testing strategy",
+      "category": "DEC",
+      "source_ref": "commit:5088faa",
+      "implicit": false
+    },
+    {
+      "id": "KIP-006",
+      "text": "A BillbeeMockFixture was created for mocking external API interactions in tests",
+      "category": "IMP",
+      "source_ref": "commit:5088faa, file:Fixtures/BillbeeMockFixture.cs",
+      "implicit": false
+    },
+    {
+      "id": "KIP-007",
+      "text": "An SftpGoFixture was created for simulating SFTP file transfer operations in tests",
+      "category": "IMP",
+      "source_ref": "commit:5088faa, file:Fixtures/SftpGoFixture.cs",
+      "implicit": false
+    },
+    {
+      "id": "KIP-008",
+      "text": "Integration tests were created covering the SFTP client functionality",
+      "category": "IMP",
+      "source_ref": "commit:5088faa, file:SftpClientTests.cs",
+      "implicit": false
+    },
+    {
+      "id": "KIP-009",
+      "text": "Integration tests were created for all four core sync operations: Orders, OrderFeedback, Products, and Stocks",
+      "category": "IMP",
+      "source_ref": "commit:5088faa",
+      "implicit": false
+    },
+    {
+      "id": "KIP-010",
+      "text": "A CsvTestData helper class was created for generating structured test data",
+      "category": "IMP",
+      "source_ref": "commit:5088faa, file:TestData/CsvTestData.cs",
+      "implicit": false
+    },
+    {
+      "id": "KIP-011",
+      "text": "Integration test warnings and code quality issues were cleaned up in a follow-up pass",
+      "category": "IMP",
+      "source_ref": "inferred:ce26c70,79a4931",
+      "implicit": true
+    }
+  ]
+}

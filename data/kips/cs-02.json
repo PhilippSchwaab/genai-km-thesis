@@ -1,0 +1,40 @@
+{
+  "artifact_id": "cs-02",
+  "artifact_type": "support_report",
+  "source_file": "CS-02_Automatic_Screenshot_report.md",
+  "extracted_by": "claude-assisted-draft",
+  "validated_by": null,
+  "extraction_date": "2026-04-16",
+  "validation_date": null,
+  "narrative_summary": "A brief procedure for activating the automatic screenshot function on a Groninger/Fresenius machine HMI.",
+  "kips": [
+    {
+      "id": "KIP-001",
+      "text": "The automatic screenshot function requires a USB drive with drive letter G: connected to the machine HMI",
+      "category": "TEC",
+      "source_ref": "page:5, section:3",
+      "implicit": false
+    },
+    {
+      "id": "KIP-002",
+      "text": "Activation requires logging in with user gronservice2",
+      "category": "TEC",
+      "source_ref": "page:5, section:3",
+      "implicit": false
+    },
+    {
+      "id": "KIP-003",
+      "text": "The activation procedure navigates to Service, Bedientableau, Inbetriebnahme, then enables Fernwartung, Display access level, and Automatischer Bildschirmdruck",
+      "category": "IMP",
+      "source_ref": "page:5, section:3",
+      "implicit": false
+    },
+    {
+      "id": "KIP-004",
+      "text": "Active status of the automatic screenshot function is visible in the HMI status bar",
+      "category": "TEC",
+      "source_ref": "page:5, section:3",
+      "implicit": false
+    }
+  ]
+}
