@@ -1,7 +1,7 @@
 """
 Architecture B — Agentic Workflow runner (Strands Agents SDK).
 
-Multi-step generation with self-review: the agent extracts facts, drafts a
+Multistep generation with self-review: the agent extracts facts, drafts a
 wiki entry, checks for completeness / hallucinations against the source, and
 revises autonomously.  Each run produces a timestamped directory under
 eval/results/ with the same structure as Architecture A for fair comparison.
@@ -228,7 +228,7 @@ def run_agentic(
 def _estimate_cost(
     model: str, prompt_tokens: int, completion_tokens: int
 ) -> float:
-    """Estimate cost in USD using litellm's cost tables."""
+    """Estimate cost in USD using litellm cost tables."""
     try:
         import litellm
 
@@ -237,5 +237,5 @@ def _estimate_cost(
             prompt=str(prompt_tokens),
             completion=str(completion_tokens),
         )
-    except Exception:
+    except (ValueError, KeyError, TypeError, ImportError):
         return 0.0
