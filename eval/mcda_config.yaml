@@ -1,68 +1,42 @@
-# MCDA Configuration — Stakeholder-Weighted Criteria
+# MCDA Configuration — Stakeholder-Weighted Criteria (Reduced Scope)
 # Source: Mentimeter session with 6 Meshmakers stakeholders, Feb 2026
+# Original 5 criteria reduced to 3 measured criteria.
+# Accuracy and Verification Effort discussed qualitatively in Ch. 5.
 # See docs/requirements/mcda_criteria.md for full rationale.
 
 criteria:
 
-  accuracy:
-    weight: 0.30
-    direction: higher_is_better    # higher recall = better
-    metrics:
-      - kip_recall
-      - hallucination_rate         # direction overridden below
-
-  verification_effort:
-    weight: 0.25
-    direction: lower_is_better     # less effort = better
-    metrics:
-      - review_time_minutes
-      - edit_count
-
   completeness:
-    weight: 0.20
+    weight: 0.44
     direction: higher_is_better
     metrics:
-      - kip_recall_by_category     # per-category breakdown
+      - kip_recall               # KIPs matched / total KIPs
 
   speed:
-    weight: 0.15
-    direction: lower_is_better     # faster = better
+    weight: 0.33
+    direction: lower_is_better   # faster = better
     metrics:
-      - latency_seconds
-      - token_throughput
+      - latency_seconds          # wall-clock time, input to final output
 
   cost:
-    weight: 0.10
-    direction: lower_is_better     # cheaper = better
+    weight: 0.22
+    direction: lower_is_better   # cheaper = better
     metrics:
-      - cost_per_artifact_eur
-      - total_run_cost_eur
-
-# Metric-level direction overrides (when a metric's direction
-# differs from its parent criterion)
-metric_overrides:
-  hallucination_rate:
-    direction: lower_is_better     # fewer hallucinations = better
+      - cost_per_artifact_eur    # via LiteLLM cost tracking
 
 # Alternative weight sets for sensitivity analysis
 sensitivity_profiles:
   equal:
-    accuracy: 0.20
-    verification_effort: 0.20
-    completeness: 0.20
-    speed: 0.20
-    cost: 0.20
+    completeness: 0.33
+    speed: 0.33
+    cost: 0.33
 
-  accuracy_dominated:
-    accuracy: 0.50
-    verification_effort: 0.15
-    completeness: 0.15
-    speed: 0.10
-    cost: 0.10
+  completeness_dominated:
+    completeness: 0.70
+    speed: 0.15
+    cost: 0.15
 
   cost_dominated:
-    accuracy: 0.20
-    verification_effort: 0.15
-    completeness: 0.15
-    speed: 0.10
-    cost: 0.40
+    completeness: 0.20
+    speed: 0.20
+    cost: 0.60
