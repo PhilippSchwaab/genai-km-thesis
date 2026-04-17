@@ -60,6 +60,7 @@ class Prompt:
     version: int
     model: str
     description: str
+    sampling: dict[str, float]
     _messages: list[dict[str, str]]
 
     def render(self, **kwargs: str) -> list[dict[str, str]]:
@@ -94,6 +95,7 @@ def load_prompt(prompt_id: str) -> Prompt:
         version=meta["version"],
         model=meta["model"],
         description=meta["description"],
+        sampling=meta.get("sampling", {}),
         _messages=data["messages"],
     )
 

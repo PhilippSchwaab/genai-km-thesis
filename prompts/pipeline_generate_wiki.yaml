@@ -5,7 +5,12 @@ meta:
   id: pipeline_generate_wiki
   architecture: pipeline
   version: 1
-  model: mistral/mistral-large-latest
+  model: ollama_chat/gemma4:26b
+  sampling:
+    temperature: 1.0
+    max_tokens: 4096
+    top_p: 0.95
+    top_k: 64
   description: >
     Single-pass generation prompt for Architecture A.
     Takes an anonymized artifact and produces a structured wiki entry.

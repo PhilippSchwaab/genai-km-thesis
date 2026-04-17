@@ -88,6 +88,8 @@ def complete(
     *,
     temperature: float = 0.3,
     max_tokens: int = 4096,
+    top_p: float | None = None,
+    top_k: int | None = None,
     call_log: CallLog | None = None,
 ) -> LLMResult:
     """Call an LLM via litellm and return text + metrics.
@@ -95,8 +97,10 @@ def complete(
     Args:
         model: LiteLLM model string (e.g. "mistral/mistral-large-latest").
         messages: Chat messages in OpenAI format.
-        temperature: Sampling temperature (low for reproducibility).
+        temperature: Sampling temperature.
         max_tokens: Max tokens in the response.
+        top_p: Nucleus sampling threshold (omit to use provider default).
+        top_k: Top-k sampling (omit to use provider default).
         call_log: Optional CallLog to accumulate metrics across calls.
 
     Returns:
@@ -104,12 +108,22 @@ def complete(
     """
     call_ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
     t0 = time.perf_counter()
+
+    # Build optional kwargs — only pass if explicitly set so providers
+    # that don't support them don't receive unexpected params.
+    optional: dict = {}
+    if top_p is not None:
+        optional["top_p"] = top_p
+    if top_k is not None:
+        optional["top_k"] = top_k
+
     response = litellm.completion(
         model=model,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
         stream=False,
+        **optional,
     )
     latency = time.perf_counter() - t0
 

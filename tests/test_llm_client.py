@@ -146,6 +146,51 @@ def test_complete_passes_params(mock_litellm):
 
 
 @patch("src.common.llm_client.litellm")
+def test_complete_passes_top_p_and_top_k(mock_litellm):
+    mock_litellm.completion.return_value = _mock_response()
+    mock_litellm.completion_cost.return_value = 0.0
+
+    complete(
+        model="ollama_chat/gemma4:26b",
+        messages=[{"role": "user", "content": "test"}],
+        temperature=1.0,
+        max_tokens=4096,
+        top_p=0.95,
+        top_k=64,
+    )
+
+    mock_litellm.completion.assert_called_once_with(
+        model="ollama_chat/gemma4:26b",
+        messages=[{"role": "user", "content": "test"}],
+        temperature=1.0,
+        max_tokens=4096,
+        stream=False,
+        top_p=0.95,
+        top_k=64,
+    )
+
+
+@patch("src.common.llm_client.litellm")
+def test_complete_omits_top_p_top_k_when_none(mock_litellm):
+    """When top_p/top_k are None, they should not be passed to litellm."""
+    mock_litellm.completion.return_value = _mock_response()
+    mock_litellm.completion_cost.return_value = 0.0
+
+    complete(
+        model="mistral/mistral-large-latest",
+        messages=[{"role": "user", "content": "test"}],
+    )
+
+    mock_litellm.completion.assert_called_once_with(
+        model="mistral/mistral-large-latest",
+        messages=[{"role": "user", "content": "test"}],
+        temperature=0.3,
+        max_tokens=4096,
+        stream=False,
+    )
+
+
+@patch("src.common.llm_client.litellm")
 def test_complete_handles_empty_content(mock_litellm):
     resp = _mock_response()
     resp.choices[0].message.content = None

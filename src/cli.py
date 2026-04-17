@@ -39,19 +39,37 @@ def _complete_artifacts(incomplete: str) -> list[str]:
 def generate(
     arch: Architecture = typer.Option(..., help="Architecture to use."),
     artifacts: list[str] = typer.Argument(..., help="Filenames in data/anonymized/.", autocompletion=_complete_artifacts),
-    temperature: float = typer.Option(0.3, help="Sampling temperature."),
-    max_tokens: int = typer.Option(4096, help="Max response tokens."),
+    prompt: Optional[str] = typer.Option(None, help="Prompt template id (overrides default for the architecture)."),
+    temperature: Optional[float] = typer.Option(None, help="Override sampling temperature."),
+    max_tokens: Optional[int] = typer.Option(None, help="Override max response tokens."),
+    top_p: Optional[float] = typer.Option(None, help="Override nucleus sampling (top_p)."),
+    top_k: Optional[int] = typer.Option(None, help="Override top-k sampling."),
     tag: str = typer.Option("", help="Optional tag for the run directory."),
 ):
-    """Generate wiki entries from anonymized artifacts."""
+    """Generate wiki entries from anonymized artifacts.
+
+    Sampling parameters (temperature, max_tokens, top_p, top_k) default to
+    the values in the prompt YAML. CLI flags override them when provided.
+    """
+    # Build kwargs — only include sampling overrides that were explicitly set
+    sampling_overrides: dict = {}
+    if temperature is not None:
+        sampling_overrides["temperature"] = temperature
+    if max_tokens is not None:
+        sampling_overrides["max_tokens"] = max_tokens
+    if top_p is not None:
+        sampling_overrides["top_p"] = top_p
+    if top_k is not None:
+        sampling_overrides["top_k"] = top_k
+
     if arch == Architecture.pipeline:
         from src.pipeline.runner import run_pipeline
 
         run_dir = run_pipeline(
             *artifacts,
-            temperature=temperature,
-            max_tokens=max_tokens,
+            prompt_id=prompt or "pipeline_generate_wiki",
             run_tag=tag or None,
+            **sampling_overrides,
         )
         typer.echo(f"Pipeline complete → {run_dir}")
     elif arch == Architecture.agentic:
@@ -59,9 +77,9 @@ def generate(
 
         run_dir = run_agentic(
             *artifacts,
-            temperature=temperature,
-            max_tokens=max_tokens,
+            prompt_id=prompt or "agentic_generate_wiki",
             run_tag=tag or None,
+            **sampling_overrides,
         )
         typer.echo(f"Agentic complete → {run_dir}")
 

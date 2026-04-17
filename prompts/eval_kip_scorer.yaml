@@ -6,6 +6,9 @@ meta:
   architecture: eval
   version: 1
   model: mistral/mistral-large-latest
+  sampling:
+    temperature: 0.0
+    max_tokens: 256
   description: >
     LLM-as-judge prompt for KIP recall scoring. Given a single KIP and
     a generated wiki entry, determines whether the fact is captured.

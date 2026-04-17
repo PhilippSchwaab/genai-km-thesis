@@ -23,7 +23,8 @@ def _fake_result(text: str = "# Wiki Entry\n\nGenerated content.") -> LLMResult:
     )
 
 
-def _fake_complete(model, messages, *, temperature=0.3, max_tokens=4096, call_log=None):
+def _fake_complete(model, messages, *, temperature=0.3, max_tokens=4096,
+                   top_p=None, top_k=None, call_log=None):
     """Stand-in for complete() that records to the call_log like the real one."""
     result = _fake_result()
     if call_log is not None:
@@ -66,7 +67,6 @@ def test_writes_metadata_json(mock_complete, results_dir):
 
     assert meta["architecture"] == "pipeline"
     assert meta["prompt_id"] == "pipeline_generate_wiki"
-    assert meta["model"] == "mistral/mistral-large-latest"
     assert "CS-06_Testing_Strategy_compiled" in meta["artifact_id"]
     assert meta["artifact_type"] == "development_activity"
     assert meta["total_latency_seconds"] == 2.15
@@ -99,24 +99,40 @@ def test_run_tag_appended_to_dir_name(mock_complete, results_dir):
     assert run_dir.name.endswith("_v2test")
 
 
-# ── Parameters passed through ────────────────────────────────────────
+# ── Sampling from YAML defaults ─────────────────────────────────────
 
 
-def test_temperature_and_max_tokens_in_metadata(mock_complete, results_dir):
+def test_sampling_defaults_from_yaml(mock_complete, results_dir):
+    """When no overrides are given, sampling comes from the prompt YAML."""
+    run_dir = run_pipeline("CS-06_Testing_Strategy_compiled.md")
+    meta = json.loads((run_dir / "metadata.json").read_text())
+    # pipeline_generate_wiki.yaml has: temperature=1.0, top_p=0.95, top_k=64
+    assert meta["temperature"] == 1.0
+    assert meta["top_p"] == 0.95
+    assert meta["top_k"] == 64
+    assert meta["max_tokens"] == 4096
+
+
+def test_cli_overrides_yaml_sampling(mock_complete, results_dir):
+    """CLI overrides take precedence over YAML defaults."""
     run_dir = run_pipeline(
         "CS-06_Testing_Strategy_compiled.md",
         temperature=0.7,
         max_tokens=2048,
+        top_p=0.9,
+        top_k=50,
     )
     meta = json.loads((run_dir / "metadata.json").read_text())
     assert meta["temperature"] == 0.7
     assert meta["max_tokens"] == 2048
+    assert meta["top_p"] == 0.9
+    assert meta["top_k"] == 50
 
 
 def test_complete_called_with_correct_model(mock_complete, results_dir):
     run_pipeline("CS-06_Testing_Strategy_compiled.md")
     call_kwargs = mock_complete.call_args
-    assert call_kwargs.kwargs.get("model") or call_kwargs.args[0] == "mistral/mistral-large-latest"
+    assert call_kwargs.kwargs.get("model") or call_kwargs.args[0] == "ollama_chat/gemma4:26b"
 
 
 # ── Support reports work too ─────────────────────────────────────────

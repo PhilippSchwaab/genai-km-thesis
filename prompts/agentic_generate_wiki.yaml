@@ -6,6 +6,9 @@ meta:
   architecture: agentic
   version: 1
   model: mistral/mistral-large-latest
+  sampling:
+    temperature: 0.3
+    max_tokens: 4096
   description: >
     System prompt for the agentic workflow. The agent iterates over the
     artifact, extracts facts, drafts a wiki entry, then self-reviews for

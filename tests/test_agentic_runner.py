@@ -125,31 +125,57 @@ def test_run_tag_appended_to_dir_name(mock_agent, results_dir):
     assert run_dir.name.endswith("_v1")
 
 
-# ── Parameters ──────────────────────────────────────────────────────────
+# ── Sampling from YAML defaults ─────────────────────────────────────
 
 
-def test_temperature_and_max_tokens_in_metadata(mock_agent, results_dir):
+def test_sampling_defaults_from_yaml(mock_agent, results_dir):
+    """agentic_generate_wiki.yaml has temperature=0.3, no top_p/top_k."""
+    run_dir = run_agentic("CS-06_Testing_Strategy_compiled.md")
+    meta = json.loads((run_dir / "metadata.json").read_text())
+    assert meta["temperature"] == 0.3
+    assert meta["max_tokens"] == 4096
+    assert meta["top_p"] is None
+    assert meta["top_k"] is None
+
+
+def test_cli_overrides_yaml_sampling(mock_agent, results_dir):
     run_dir = run_agentic(
         "CS-06_Testing_Strategy_compiled.md",
         temperature=0.7,
         max_tokens=2048,
+        top_p=0.9,
+        top_k=50,
     )
     meta = json.loads((run_dir / "metadata.json").read_text())
     assert meta["temperature"] == 0.7
     assert meta["max_tokens"] == 2048
+    assert meta["top_p"] == 0.9
+    assert meta["top_k"] == 50
 
 
-def test_create_agent_receives_params(mock_agent, results_dir):
+def test_create_agent_receives_yaml_params(mock_agent, results_dir):
+    run_agentic("CS-06_Testing_Strategy_compiled.md")
+    mock_agent.assert_called_once()
+    call_kwargs = mock_agent.call_args[1]
+    assert call_kwargs["model_id"] == "mistral/mistral-large-latest"
+    assert call_kwargs["temperature"] == 0.3
+    assert call_kwargs["max_tokens"] == 4096
+
+
+def test_create_agent_receives_overrides(mock_agent, results_dir):
     run_agentic(
         "CS-06_Testing_Strategy_compiled.md",
         temperature=0.5,
         max_tokens=1024,
+        top_p=0.8,
+        top_k=40,
     )
     mock_agent.assert_called_once()
     call_kwargs = mock_agent.call_args[1]
-    assert call_kwargs["model_id"] == "mistral/mistral-large-latest"
     assert call_kwargs["temperature"] == 0.5
     assert call_kwargs["max_tokens"] == 1024
+    assert call_kwargs["top_p"] == 0.8
+    assert call_kwargs["top_k"] == 40
 
 
 # ── Support reports ─────────────────────────────────────────────────────

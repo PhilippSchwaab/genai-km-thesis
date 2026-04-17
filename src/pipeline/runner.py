@@ -27,17 +27,25 @@ _RESULTS_DIR = _PROJECT_ROOT / "eval" / "results"
 def run_pipeline(
     *artifact_filenames: str,
     prompt_id: str = "pipeline_generate_wiki",
-    temperature: float = 0.3,
-    max_tokens: int = 4096,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
     run_tag: str | None = None,
 ) -> Path:
     """Run Architecture A on one or more artifacts.
 
+    Sampling parameters are read from the prompt YAML by default.
+    CLI overrides (temperature, max_tokens, top_p, top_k) take precedence
+    when explicitly provided.
+
     Args:
         artifact_filenames: Filenames in data/anonymized/.
         prompt_id: Prompt template to use.
-        temperature: Sampling temperature.
-        max_tokens: Max response tokens.
+        temperature: Override sampling temperature.
+        max_tokens: Override max response tokens.
+        top_p: Override nucleus sampling threshold.
+        top_k: Override top-k sampling.
         run_tag: Optional tag appended to the run directory name.
 
     Returns:
@@ -47,6 +55,15 @@ def run_pipeline(
     prompt = load_prompt(prompt_id)
     bundle = load_artifacts(*artifact_filenames)
     model = prompt.model
+
+    # Resolve sampling: CLI overrides > prompt YAML > hardcoded defaults
+    sampling = prompt.sampling
+    eff_temperature = temperature if temperature is not None else sampling.get("temperature", 0.3)
+    eff_max_tokens = max_tokens if max_tokens is not None else int(sampling.get("max_tokens", 4096))
+    eff_top_p = top_p if top_p is not None else sampling.get("top_p")
+    eff_top_k = top_k if top_k is not None else sampling.get("top_k")
+    if eff_top_k is not None:
+        eff_top_k = int(eff_top_k)
 
     messages = prompt.render(
         artifact_type=bundle.artifact_type,
@@ -59,8 +76,10 @@ def run_pipeline(
     result = complete(
         model=model,
         messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
+        temperature=eff_temperature,
+        max_tokens=eff_max_tokens,
+        top_p=eff_top_p,
+        top_k=eff_top_k,
         call_log=log,
     )
 
@@ -86,8 +105,10 @@ def run_pipeline(
         "artifact_id": bundle.artifact_id,
         "artifact_type": bundle.artifact_type,
         "artifact_files": list(artifact_filenames),
-        "temperature": temperature,
-        "max_tokens": max_tokens,
+        "temperature": eff_temperature,
+        "max_tokens": eff_max_tokens,
+        "top_p": eff_top_p,
+        "top_k": eff_top_k,
         "timestamp": result.timestamp,
         **log.summary(),
     }

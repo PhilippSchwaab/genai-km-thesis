@@ -90,17 +90,25 @@ def _create_agent(
     max_tokens: int,
     system_prompt: str,
     tools: list,
+    top_p: float | None = None,
+    top_k: int | None = None,
 ) -> Any:
     """Create a Strands Agent. Separated for testability."""
     from strands import Agent
     from strands.models.litellm import LiteLLMModel
 
+    params: dict = {
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if top_p is not None:
+        params["top_p"] = top_p
+    if top_k is not None:
+        params["top_k"] = top_k
+
     llm = LiteLLMModel(
         model_id=model_id,
-        params={
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-        },
+        params=params,
     )
     return Agent(
         model=llm,
@@ -114,17 +122,24 @@ def _create_agent(
 def run_agentic(
     *artifact_filenames: str,
     prompt_id: str = "agentic_generate_wiki",
-    temperature: float = 0.3,
-    max_tokens: int = 4096,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
     run_tag: str | None = None,
 ) -> Path:
     """Run Architecture B on one or more artifacts.
 
+    Sampling parameters are read from the prompt YAML by default.
+    CLI overrides take precedence when explicitly provided.
+
     Args:
         artifact_filenames: Filenames in data/anonymized/.
         prompt_id: Prompt template to use.
-        temperature: Sampling temperature.
-        max_tokens: Max response tokens.
+        temperature: Override sampling temperature.
+        max_tokens: Override max response tokens.
+        top_p: Override nucleus sampling threshold.
+        top_k: Override top-k sampling.
         run_tag: Optional tag appended to the run directory name.
 
     Returns:
@@ -134,6 +149,15 @@ def run_agentic(
     prompt = load_prompt(prompt_id)
     bundle = load_artifacts(*artifact_filenames)
     model_id = prompt.model
+
+    # Resolve sampling: CLI overrides > prompt YAML > hardcoded defaults
+    sampling = prompt.sampling
+    eff_temperature = temperature if temperature is not None else sampling.get("temperature", 0.3)
+    eff_max_tokens = max_tokens if max_tokens is not None else int(sampling.get("max_tokens", 4096))
+    eff_top_p = top_p if top_p is not None else sampling.get("top_p")
+    eff_top_k = top_k if top_k is not None else sampling.get("top_k")
+    if eff_top_k is not None:
+        eff_top_k = int(eff_top_k)
 
     # Make the source text available to the tools
     global _SOURCE_TEXT
@@ -159,10 +183,12 @@ def run_agentic(
     tools = _make_tools()
     agent = _create_agent(
         model_id=model_id,
-        temperature=temperature,
-        max_tokens=max_tokens,
+        temperature=eff_temperature,
+        max_tokens=eff_max_tokens,
         system_prompt=system_prompt,
         tools=tools,
+        top_p=eff_top_p,
+        top_k=eff_top_k,
     )
 
     t0 = time.perf_counter()
@@ -202,8 +228,10 @@ def run_agentic(
         "artifact_id": bundle.artifact_id,
         "artifact_type": bundle.artifact_type,
         "artifact_files": list(artifact_filenames),
-        "temperature": temperature,
-        "max_tokens": max_tokens,
+        "temperature": eff_temperature,
+        "max_tokens": eff_max_tokens,
+        "top_p": eff_top_p,
+        "top_k": eff_top_k,
         "timestamp": call_ts,
         "num_calls": metrics.get("tool_usage", {}).get("total_tool_calls", 0) + 1,
         "total_latency_seconds": round(latency, 2),
