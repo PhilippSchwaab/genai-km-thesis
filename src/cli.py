@@ -84,14 +84,69 @@ def generate(
         typer.echo(f"Agentic complete → {run_dir}")
 
 
+def _complete_run_dirs(incomplete: str) -> list[str]:
+    """Return matching run directory names for shell autocompletion."""
+    results_dir = Path(__file__).resolve().parents[1] / "eval" / "results"
+    if not results_dir.is_dir():
+        return []
+    return [
+        d.name for d in sorted(results_dir.iterdir())
+        if d.is_dir() and d.name.lower().startswith(incomplete.lower())
+    ]
+
+
 @app.command()
 def evaluate(
-    run_dir: Path = typer.Option(..., help="Directory with generation outputs."),
+    run_dirs: list[str] = typer.Argument(..., help="Run directory names in eval/results/.", autocompletion=_complete_run_dirs),
+    judge_model: Optional[str] = typer.Option(None, help="Override the judge model from the eval prompt."),
+    compare: bool = typer.Option(False, help="Run MCDA comparison across all provided runs."),
+    weight_profile: Optional[str] = typer.Option(None, help="MCDA sensitivity profile (equal, completeness_dominated, cost_dominated)."),
+    eur_per_usd: float = typer.Option(0.92, help="EUR/USD exchange rate for cost conversion."),
 ):
-    """Run the evaluation suite on generated outputs."""
-    typer.echo(f"evaluate: run_dir={run_dir}")
-    typer.echo("Not yet implemented.")
-    raise typer.Exit(code=1)
+    """Evaluate generated wiki entries against KIP ground truth.
+
+    Pass one or more run directory names (from eval/results/).
+    Use --compare to compute MCDA scores across all runs.
+    """
+    from eval.harness.run_eval import evaluate_and_compare, evaluate_run
+
+    results_base = Path(__file__).resolve().parents[1] / "eval" / "results"
+    resolved = [results_base / name for name in run_dirs]
+
+    # Validate all dirs exist
+    for rd in resolved:
+        if not rd.is_dir():
+            typer.echo(f"Error: run directory not found: {rd}", err=True)
+            raise typer.Exit(code=1)
+
+    if compare and len(resolved) > 1:
+        typer.echo(f"Evaluating and comparing {len(resolved)} runs...")
+        comparison = evaluate_and_compare(
+            *resolved,
+            judge_model=judge_model,
+            weight_profile=weight_profile,
+            eur_per_usd=eur_per_usd,
+        )
+        typer.echo("\nMCDA Results:")
+        for run in comparison["runs"]:
+            arch = run["architecture"]
+            score = run["total_score"]
+            recall = run["raw_metrics"]["kip_recall"]
+            latency = run["raw_metrics"]["latency_seconds"]
+            typer.echo(f"  {arch:10s}  MCDA={score:.4f}  recall={recall:.1%}  latency={latency:.1f}s")
+        typer.echo(f"\nComparison saved → eval/metrics/comparison.json")
+    else:
+        for rd in resolved:
+            typer.echo(f"Evaluating {rd.name}...")
+            report = evaluate_run(rd, judge_model=judge_model)
+            counts = report.counts
+            typer.echo(
+                f"  KIP Recall: {report.recall:.1%} "
+                f"({counts['YES']} YES, {counts['PARTIAL']} PARTIAL, {counts['NO']} NO "
+                f"out of {report.total_kips} KIPs)"
+            )
+            typer.echo(f"  Eval cost: ${report.call_log.total_cost_usd:.4f}")
+            typer.echo(f"  Results → {rd / 'kip_eval.json'}")
 
 
 @app.command()

@@ -5,10 +5,12 @@ meta:
   id: agentic_generate_wiki
   architecture: agentic
   version: 1
-  model: mistral/mistral-large-latest
+  model: ollama_chat/gemma4:26b
   sampling:
-    temperature: 0.3
+    temperature: 1.0
     max_tokens: 4096
+    top_p: 0.95
+    top_k: 64
   description: >
     System prompt for the agentic workflow. The agent iterates over the
     artifact, extracts facts, drafts a wiki entry, then self-reviews for
