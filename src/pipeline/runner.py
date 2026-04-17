@@ -72,6 +72,7 @@ def run_pipeline(
     )
 
     # ── 2. Call LLM ──────────────────────────────────────────────────
+    print(f"Generating wiki entry for {bundle.artifact_id}...", flush=True)
     log = CallLog()
     result = complete(
         model=model,
@@ -82,6 +83,8 @@ def run_pipeline(
         top_k=eff_top_k,
         call_log=log,
     )
+
+    print(f"Done. ({result.latency_seconds}s, {result.total_tokens} tokens)", flush=True)
 
     # ── 3. Create run output directory ───────────────────────────────
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
