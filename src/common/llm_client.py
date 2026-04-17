@@ -28,11 +28,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# LiteLLM needs the key in the environment; ensure it's set.
-_MISTRAL_KEY = os.getenv("MISTRAL_API_KEY", "")
-if _MISTRAL_KEY:
-    os.environ["MISTRAL_API_KEY"] = _MISTRAL_KEY
-
 # Suppress litellm's noisy logging by default.
 litellm.suppress_debug_info = True
 

@@ -2,7 +2,7 @@
 
 **System Designs for GenAI-Based Knowledge Capture in SME Business Processes**
 
-Master's thesis comparing two LLM-driven architectures — a structured pipeline (Architecture A) and an agentic workflow (Architecture B) — for automatically converting unstructured business artifacts (meeting transcripts, chat logs, commit histories) into structured wiki entries.
+Master's thesis comparing two LLM-driven architectures — a structured pipeline (Architecture A) and an agentic workflow (Architecture B) — for automatically converting unstructured business artifacts into structured wiki entries.
 
 **Author:** Philipp Julian Schwaab | **Advisor:** Dorian Achim Prill | **Company:** Meshmakers GmbH
 
@@ -10,33 +10,61 @@ Master's thesis comparing two LLM-driven architectures — a structured pipeline
 
 ```bash
 uv sync
-cp .env.example .env   # add your Mistral API key
+cp .env.example .env
 ```
+
+### Local (Ollama)
+
+No API key needed. Install [Ollama](https://ollama.com), pull a model, and set the base URL:
+
+```bash
+ollama pull gemma4:26b
+# .env
+OLLAMA_API_BASE=http://localhost:11434
+```
+
+### Cloud (Mistral, OpenAI, etc.)
+
+Add your API key to `.env` (e.g. `MISTRAL_API_KEY=...`). See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for supported models.
 
 ## Project Structure
 
 ```
-src/common/       Shared utilities (LLM client, PII redaction, config)
 src/pipeline/     Architecture A — Structured Pipeline
-src/agentic/      Architecture B — Agentic Workflow
-prompts/          Versioned prompt library
+src/agentic/      Architecture B — Agentic Workflow (Strands Agents SDK)
+src/common/       Shared utilities (LLM client, PII redaction, prompt loader)
+prompts/          Versioned prompt YAMLs (generation + evaluation)
 data/             raw → anonymized → KIPs (gold standard)
-eval/             Evaluation harness, metrics, results
-docs/             Architecture docs, requirements, DSR changelog
+eval/harness/     KIP scorer (LLM-as-judge), MCDA comparison
+eval/results/     Per-run outputs (wiki_entry.md, metadata.json, kip_eval.json)
+eval/metrics/     Cross-run comparison results
+docs/             Architecture docs, DSR changelog, future plans
 ```
 
 ## CLI
 
-All commands are available via the `km` entry point:
-
 ```bash
-km --help                # show all commands
+km --help
+
+# Generate wiki entries
+km generate --arch pipeline CS-06_Testing_Strategy_compiled.md
+km generate --arch agentic  CS-06_Testing_Strategy_compiled.md
+
+# Override prompt template or sampling
+km generate --arch pipeline --prompt my_prompt_id --temperature 0.8 --top-p 0.9 CS-06*.md
+
+# Evaluate runs (KIP recall per run)
+km evaluate pipeline_CS-06_..._20260417T060240Z agentic_CS-06_..._20260417T061058Z \
+  --judge-model ollama_chat/gemma4:26b
+
+# Compare runs (MCDA ranking)
+km evaluate pipeline_CS-06_... agentic_CS-06_... --compare
+km evaluate pipeline_CS-06_... agentic_CS-06_... --compare --weight-profile equal
+
+# Other
 km anonymize             # redact PII: data/raw/ → data/anonymized/
-km generate --arch pipeline sample_meeting.txt   # generate wiki entry
-km evaluate --run-dir runs/2026-04-13/           # run eval suite
 km validate              # validate all KIPs against schema
-km validate data/kips/sample_meeting.json        # validate a single file
-km prompts               # list available prompt templates
+km prompts               # list prompt templates with model + version
 ```
 
 > If `km` is not on your PATH, use `uv run km` instead.
@@ -44,9 +72,9 @@ km prompts               # list available prompt templates
 ## Tests
 
 ```bash
-uv run pytest -v          # no API key required
+uv run pytest -v          # 97 tests, no API key required
 ```
 
 ## Stack
 
-Python 3.13 · Mistral AI (via LiteLLM) · Microsoft Presidio · uv
+Python 3.13 · LiteLLM (Ollama / Mistral / OpenAI) · Strands Agents SDK · Microsoft Presidio · uv
