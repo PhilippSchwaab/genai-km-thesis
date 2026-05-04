@@ -1,0 +1,106 @@
+{
+  "artifact_id": "CS-01_Archive_Backup_report",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/pipeline_CS-01_Archive_Backup_report_20260417T081806Z",
+  "total_kips": 10,
+  "recall": 1.0,
+  "counts": {
+    "YES": 10,
+    "PARTIAL": 0,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.084096,
+  "eval_latency_seconds": 32.27,
+  "eval_tokens": 25312,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "The BatchBackup plant model extends the SCADA system with automatic backup of batch production data in case of uncontrolled Zenon runtime termination",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in Section 1 that \"The **BatchBackup** plant model extends the SCADA system with an automatic backup function that activates in the event of an **uncontrolled Zenon Runtime termination during an active batch production**.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "The backup procedure is triggered at runtime restart by evaluating three variables: B1_Batch.Start (remanent), nboBatchRuntimeStart, and nboBatchBackupStart",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 3.1 explicitly lists all three variables (B1_Batch.Start as remanent, nboBatchRuntimeStart, and nboBatchBackupStart) and describes how they are evaluated at runtime restart to trigger the backup procedure.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "During batch production, archives S1 and E1 are automatically copied to the ExportArx runtime folder every 5 minutes to preserve batch data",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in multiple places (Section 1, Section 3.1, and Section 7) that archives S1 and E1 are copied every 5 minutes to the ExportArx runtime folder during batch production.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "The SE_StartBatchBackup script stops and restarts archives E1 and S1 and displays a popup notification (Pop_BatchBackup) to the operator",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 3.2 explicitly describes the `SE_StartBatchBackup` script stopping archives E1 and S1 (step 1), displaying the popup `Pop_BatchBackup` to the user (step 2), and restarting archives E1 and S1 (step 4).",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "In the SCADA project, the StartBatchBackup script additionally starts all S1 and E1 start archives from subprojects",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in section 3.2 (step 5) that in the SCADA project only, all S1 and E1 start archives from sub-projects are started, and this is further confirmed in section 5 under Scripts/Functions for the `StartBatchBackup` script.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "The BatchBackupExportArchives script copies E1.ARS, E1.ARX, S1.ARS, and S1.ARX files from the runtime data folder to the ExportArx export folder",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 3.3 explicitly states that the `BatchBackupExportArchives` script copies `E1.ARS`, `E1.ARX`, `S1.ARS`, and `S1.ARX` files from the Runtime data folder to the Runtime export folder `ExportArx`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "The plant model can be imported via the ImportModelWizard or manually by adding 17 individual components under the Basic plant model",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes both the ImportModelWizard method (Section 4.1) and the manual import method (Section 4.2), which lists exactly 17 individual components to be added under the Basic plant model.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Wizard import must be performed on all subprojects before the SCADA project because the SaveRemanentDataAllProject script references subproject functions",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 4.1 explicitly states that import must be performed on all sub-projects first and then the SCADA project last, because the script `SaveRemanentDataAllProject` accesses functions in the sub-projects.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Additional configuration requires setting B1_Batch.Start and B1_Batch.Start_Extern as remanent, creating the ExportArx folder, and modifying Autostart and Autostart_Delay scripts",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 5 explicitly states setting `B1_Batch.Start` and `B1_Batch.Start_Extern` as Remanent, creating the `ExportArx` folder, and modifying the `Autostart` and `Autostart_Delay` scripts with the required functions.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "The red-highlighted batch name after runtime restart is expected behavior caused by the uniqueness check detecting the name was already assigned at batch start",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 6 explicitly states that the red-highlighted batch name after Runtime restart is expected/normal behavior caused by the uniqueness check detecting the name was already assigned at batch start.",
+      "score": 1.0
+    }
+  ]
+}

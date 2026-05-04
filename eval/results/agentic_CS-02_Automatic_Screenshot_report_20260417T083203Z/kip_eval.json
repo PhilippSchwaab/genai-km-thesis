@@ -1,0 +1,52 @@
+{
+  "artifact_id": "CS-02_Automatic_Screenshot_report",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/agentic_CS-02_Automatic_Screenshot_report_20260417T083203Z",
+  "total_kips": 4,
+  "recall": 1.0,
+  "counts": {
+    "YES": 4,
+    "PARTIAL": 0,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.011022,
+  "eval_latency_seconds": 10.58,
+  "eval_tokens": 2782,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "The automatic screenshot function requires a USB drive with drive letter G: connected to the machine HMI",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 3 (Prerequisites) explicitly states that \"A USB stick assigned the drive letter **G:** must be connected to the machine's HMI before beginning the procedure.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "Activation requires logging in with user gronservice2",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Step 1 of the procedure explicitly states \"Log in using the username `gronservice2`,\" directly capturing the key information point.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "The activation procedure navigates to Service, Bedientableau, Inbetriebnahme, then enables Fernwartung, Display access level, and Automatischer Bildschirmdruck",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes navigating to `Service → Bedientabeau → Inbetriebnahme`, then clicking \"Fernwartung,\" activating \"Display access level,\" and activating \"Automatischer Bildschirmdruck,\" which matches all elements of the key information point.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Active status of the automatic screenshot function is visible in the HMI status bar",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Section 5 (Verification) explicitly states that once the feature is enabled, the status bar on the HMI will confirm that \"Automatischer Bildschirmdruck\" is active, directly capturing the key information point.",
+      "score": 1.0
+    }
+  ]
+}

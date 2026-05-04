@@ -106,10 +106,10 @@ def test_sampling_defaults_from_yaml(mock_complete, results_dir):
     """When no overrides are given, sampling comes from the prompt YAML."""
     run_dir = run_pipeline("CS-06_Testing_Strategy_compiled.md")
     meta = json.loads((run_dir / "metadata.json").read_text())
-    # pipeline_generate_wiki.yaml has: temperature=1.0, top_p=0.95, top_k=64
-    assert meta["temperature"] == 1.0
-    assert meta["top_p"] == 0.95
-    assert meta["top_k"] == 64
+    # pipeline_generate_wiki.yaml has: temperature=0.3, max_tokens=4096
+    assert meta["temperature"] == 0.3
+    assert meta.get("top_p") is None
+    assert meta.get("top_k") is None
     assert meta["max_tokens"] == 4096
 
 

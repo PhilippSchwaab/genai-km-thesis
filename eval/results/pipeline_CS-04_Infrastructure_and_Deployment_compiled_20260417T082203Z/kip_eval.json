@@ -1,0 +1,169 @@
+{
+  "artifact_id": "CS-04_Infrastructure_and_Deployment_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/pipeline_CS-04_Infrastructure_and_Deployment_compiled_20260417T082203Z",
+  "total_kips": 17,
+  "recall": 0.9412,
+  "counts": {
+    "YES": 15,
+    "PARTIAL": 2,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.175242,
+  "eval_latency_seconds": 66.95,
+  "eval_tokens": 53338,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "Unit tests were added for CSV processing classes and order mapping",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists unit tests added for CSV processing classes (`CsvAuftragsImportTests`, `CsvAuftragsRueckmeldungTests`, `CsvBestandsmeldungTests`) and order mapping (`OrderMapperTests`) under the Testing section, attributed to commit `af524da`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "Logging issues were fixed across the sync commands",
+      "category": "FIX",
+      "implicit": false,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry mentions \"fix logging issues\" in commit `af524da` but attributes it only to that single commit alongside adding unit tests, rather than describing logging fixes as being applied \"across the sync commands\" as a broader fix.",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "A README with developer documentation was created for the project",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states under the Documentation theme that \"Added `README.md` with extensive documentation (453+ lines) — commit `1b64323`\" and also references subsequent updates to the README, clearly capturing that a README with developer documentation was created.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "A DisplayConfigCommand CLI command was added for inspecting runtime configuration",
+      "category": "IMP",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly documents in Decision #7 that `TestConfigCommand.cs` was renamed to `DisplayConfigCommand.cs` and exposed via the `displayconfig` CLI call, and this is further corroborated in the commit log entries for `54f0b02` and `bd36650`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "Kubernetes secrets loading was added to deployment templates for credential injection",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Added credential loading via Kubernetes secrets in the deployment template — commit `1b64323`\" under the Credential & Secret Management section, directly capturing this fact.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "Kustomize was adopted for Kubernetes deployment configuration management",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in the Decisions table that Kustomize was adopted \"for credential and deployment management, replacing legacy deployment template files,\" and this is further supported by a dedicated \"Deployment Structure (Kustomize Migration)\" section describing the Kubernetes deployment configuration changes.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "A Kustomize base layer was created with CronJob definitions and shared configuration",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Created `deployment/base/` with `cronjobs.yaml`, `kustomization.yaml`\" under the Deployment Structure section, and Decision #1 confirms the adoption of Kustomize for deployment management, clearly capturing the creation of a Kustomize base layer with CronJob definitions and shared configuration.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Deprecated legacy staging deployment files were removed after Kustomize adoption",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Removed deprecated legacy staging and production deployment template files — commits `fb836a7`, `6db7a94`\" under the \"Deployment Structure (Kustomize Migration)\" section, and Decision #1 confirms Kustomize was adopted to replace legacy deployment template files.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Initial deployment file changes had to be reverted because they diverged too far from main before Kustomize was in place",
+      "category": "RAT",
+      "implicit": true,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry shows commits `fb836a7` (\"Revert overzealous changes\") and `af4e2d1` (\"Restore parity with `origin/main`\") on 2026-01-26, and Decision #1 mentions adopting Kustomize, implying a revert occurred before Kustomize was in place, but the entry never explicitly states that the initial deployment file changes were reverted *because* they diverged too far from main before Kustomize was ready.",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "The project shifted from a custom StorageClass to the cluster's built-in StorageClass",
+      "category": "DEC",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "Decision #3 in the Decisions table explicitly states \"Switch to the built-in Kubernetes storage class instead of a custom `StorageClass` resource,\" directly capturing the key information point.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-011",
+      "kip_text": "ACR secret management was removed from the application and delegated to the cluster",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Decision #2 in the Decisions table explicitly states \"Remove ACR (Azure Container Registry) secret from deployment manifests; ACR authentication is now handled at the cluster level,\" and this is further corroborated in the commit log entry for `83f7507` (\"Remove ACR secret (now handled by cluster)\").",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-012",
+      "kip_text": "credentials-secret.yaml was renamed to credentials-secret.yaml.example and the original was added to .gitignore",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in Decision #8 that `credentials-secret.yaml` was excluded from version control (added to `.gitignore`) and that `credentials-secret.yaml.example` was provided as a template, and this is further confirmed in the commit log entry for `fb7269b` and the \"Credential & Secret Management\" section.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-013",
+      "kip_text": "Separate Kustomize overlays were created for production and staging environments",
+      "category": "CFG",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Created `deployment/overlays/lkv/staging/` and `deployment/overlays/lkv/production/` overlay directories\" under the Deployment Structure section, confirming that separate Kustomize overlays were created for both production and staging environments.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-014",
+      "kip_text": "imagePullPolicy was set to IfNotPresent in the deployment configuration",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Decision #5 in the Decisions table explicitly states \"Change `imagePullPolicy` to `IfNotPresent` in cronjob manifests,\" and the commit log entry for `70f7117` also confirms \"set `imagePullPolicy: IfNotPresent`.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-015",
+      "kip_text": "backoffLimit and activeDeadlineSeconds were added to CronJob definitions for resilience",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "Decision #10 in the Decisions table explicitly states \"Add `backoffLimit` and `activeDeadlineSeconds` to `cronjobs.yaml` for improved job reliability,\" and the commit log also references this change in commit `20d9d37`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-016",
+      "kip_text": "Billbee API Client was bumped to version 2.4.3",
+      "category": "DEP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Bumped Billbee API Client to version 2.4.3\" in the Dependency Updates section under Key Changes by Theme, and also references it in the Commit Log Summary for commit `5f6cb6d`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-017",
+      "kip_text": "19 integration tests were added in a dedicated test project using Testcontainers and Moq",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in multiple places that 19 integration tests were added in the `LKVLogistic.Cli.IntegrationTests` project using Testcontainers (SFTPGo) and Moq, including in PR #354's scope, the Testing section, and Decision #11.",
+      "score": 1.0
+    }
+  ]
+}

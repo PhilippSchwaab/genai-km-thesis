@@ -1,0 +1,20 @@
+{
+  "architecture": "pipeline",
+  "prompt_id": "pipeline_generate_wiki",
+  "prompt_version": 1,
+  "model": "claude-sonnet-4-6",
+  "artifact_id": "CS-01_Archive_Backup_report",
+  "artifact_type": "support_report",
+  "artifact_files": [
+    "CS-01_Archive_Backup_report.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 4096,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-04-17T08:17:34+00:00",
+  "num_calls": 1,
+  "total_latency_seconds": 32.12,
+  "total_cost_usd": 0.041832,
+  "total_tokens": 4900
+}

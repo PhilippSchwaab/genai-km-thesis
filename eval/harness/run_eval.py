@@ -120,6 +120,31 @@ def evaluate_and_compare(
             for r in mcda_results
         ],
     }
+    # Aggregate by architecture
+    arch_groups: dict[str, list[dict]] = {}
+    for r in mcda_results:
+        arch_groups.setdefault(r.architecture, []).append(r)
+
+    summary: list[dict] = []
+    for arch, runs in sorted(arch_groups.items()):
+        n = len(runs)
+        avg_recall = sum(r.raw_metrics["kip_recall"] for r in runs) / n
+        avg_latency = sum(r.raw_metrics["latency_seconds"] for r in runs) / n
+        total_cost = sum(r.raw_metrics["cost_eur"] for r in runs)
+        avg_mcda = sum(r.total_score for r in runs) / n
+        summary.append({
+            "architecture": arch,
+            "num_artifacts": n,
+            "avg_kip_recall": round(avg_recall, 4),
+            "avg_latency_seconds": round(avg_latency, 2),
+            "total_cost_eur": round(total_cost, 4),
+            "avg_mcda_score": round(avg_mcda, 4),
+        })
+
+    comparison["architecture_summary"] = sorted(
+        summary, key=lambda s: s["avg_mcda_score"], reverse=True
+    )
+
     comparison_path = _METRICS_DIR / "comparison.json"
     comparison_path.write_text(
         json.dumps(comparison, indent=2), encoding="utf-8"

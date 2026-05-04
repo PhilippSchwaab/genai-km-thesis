@@ -1,0 +1,20 @@
+{
+  "architecture": "pipeline",
+  "prompt_id": "pipeline_generate_wiki",
+  "prompt_version": 1,
+  "model": "claude-sonnet-4-6",
+  "artifact_id": "CS-06_Testing_Strategy_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-06_Testing_Strategy_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 4096,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-04-17T07:44:58+00:00",
+  "num_calls": 1,
+  "total_latency_seconds": 28.01,
+  "total_cost_usd": 0.032874,
+  "total_tokens": 3930
+}

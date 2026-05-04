@@ -1,8 +1,30 @@
 ﻿# DSR Change Log
 
 This document tracks all modifications made between evaluation runs
-as the Design Science Research audit trail.
+as the Design Science Research audit trail (thesis §3.1, §4.2.3, §5.3).
 
 ## Run 1 → Run 2 Changes
 
-(To be populated during Phase 3)
+Six changes scoped for DSR Cycle 2. Plan: `docs/run2_plan.md`.
+Each row is filled in as the change is implemented and its prompt YAML(s) bumped to `version: 2`.
+
+| ID    | Architecture | Component                                | Before                                                                 | After                                                                  | Rationale (Run 1 evidence + 30 Apr consultation)                                                                                                              | Status  |
+|-------|--------------|------------------------------------------|------------------------------------------------------------------------|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| CL-01 | Both         | Prompt template + CLI                    | Single fixed schema                                                    | `--audience {marketing,development,architect}` with per-audience scaffolding | Realizes Adaptability principle (thesis §2.3, Yun et al.); Tech Lead A flagged stakeholder-specific outputs as unmet need (§3.2.2)                              | Pending |
+| CL-02 | Both         | Prompt template (exemplars)              | No few-shots                                                           | 1–3 audience-appropriate exemplars spliced as user/assistant turns      | Reduce structural variance observed across Run 1 outputs (`docs/eval_cs06_first_runs.md` Obs. 1)                                                                | Pending |
+| CL-03 | Both         | Prompt template (block order)            | Instruction first, then artifact                                       | Source artifact first, instruction last                                | Aligns with Anthropic long-context guidance; positions cache breakpoint between static and dynamic content for CL-05                                            | Pending |
+| CL-04 | Agentic      | Tool prompts + REVIEW step               | Verbose intermediate output                                            | "Bullet list only, ≤120 words, `NONE` if empty"                         | Run 1 agentic produced ~2,106 tokens of internal reasoning per run (`docs/eval_cs06_first_runs.md` Obs. 2); cut intermediate verbosity without touching DRAFT  | Pending |
+| CL-06 | Agentic      | Runner + new Reviewer prompt + tool_choice | Single Strands `Agent` with two degenerate self-referential tools (`check_completeness`, `check_hallucinations`) that re-inject the source as a prompt; tool use was optional | Writer-orchestrator `Agent` + Reviewer sub-agent (new `prompts/agentic_reviewer.yaml`) wrapped as a single `review_draft(draft)` tool via Strands' "Agents as Tools" pattern; orchestrator forced via `tool_choice` to invoke Reviewer at least once | §2.2.3 promised "specialised agents that act together" but Run 1 implementation was a single agent with self-referential tools; closes that gap with no methodology shift. Also realises Tech Lead A's three-stage architecture (writer / fact-checker / human, §3.2.2 finding 2). Forced tool use defends against the Gemma-style CoT collapse documented in `docs/eval_cs06_first_runs.md` Obs. 2 | Pending |
+| CL-05 | Agentic      | Runner / LiteLLM client                  | No prompt cache                                                        | Anthropic ephemeral cache breakpoints on system prompt + source artifact (both Writer and Reviewer prefixes) | Run 1 agentic uses ~8.2× the prompt tokens of pipeline because each tool turn re-sends the source; caching amortizes the prefix across turns. After CL-06 the Reviewer also re-reads the source, so the same breakpoints apply to its request | Pending |
+
+### Excluded refinements (recorded for audit trail)
+
+- **Inline source attribution** (commit hashes / quote anchors). Discussed under thesis §3.3.3 as a candidate Run 2 refinement contingent on reviewer feedback. Reviewed and **not adopted** for Run 2; rationale to be captured in §4.2.3 prose so the §3.3.3 conditional clause is explicitly resolved.
+
+### Status tracking
+
+- **Pending** — not started.
+- **In progress** — branch open, not yet merged.
+- **Done** — merged, prompt version bumped, before/after run captured.
+
+When all six rows reach **Done**, execute the Run 2 batch (12 comparable runs + 6 audience-showcase runs as defined in `docs/run2_plan.md`).

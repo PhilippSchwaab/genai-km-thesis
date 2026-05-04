@@ -5,12 +5,10 @@ meta:
   id: agentic_generate_wiki
   architecture: agentic
   version: 1
-  model: ollama_chat/gemma4:26b
+  model: anthropic/claude-sonnet-4-6
   sampling:
-    temperature: 1.0
-    max_tokens: 4096
-    top_p: 0.95
-    top_k: 64
+    temperature: 0.3
+    max_tokens: 16384
   description: >
     System prompt for the agentic workflow. The agent iterates over the
     artifact, extracts facts, drafts a wiki entry, then self-reviews for

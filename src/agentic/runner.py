@@ -216,7 +216,7 @@ def run_agentic(
     run_dir.mkdir(parents=True, exist_ok=True)
 
     # ── 5. Write outputs ────────────────────────────────────────────
-    wiki_text = str(result)
+    wiki_text = _extract_wiki_entry(str(result))
 
     (run_dir / "wiki_entry.md").write_text(wiki_text, encoding="utf-8")
 
@@ -253,6 +253,25 @@ def run_agentic(
     return run_dir
 
 
+def _extract_wiki_entry(raw_text: str) -> str:
+    """Extract the final wiki entry from the agent's full response.
+
+    The agent's output may include reasoning steps (review findings,
+    revision notes) before the actual wiki entry.  We look for the last
+    top-level heading (``# ...``) that signals the start of the final
+    output and return everything from that point onward.
+    """
+    import re
+
+    # Find all top-level headings (# Title)
+    matches = list(re.finditer(r"^# .+", raw_text, re.MULTILINE))
+    if matches:
+        # Take everything from the last top-level heading
+        return raw_text[matches[-1].start():].strip()
+    # Fallback: return as-is if no heading found
+    return raw_text.strip()
+
+
 def _estimate_cost(
     model: str, prompt_tokens: int, completion_tokens: int
 ) -> float:
@@ -260,10 +279,11 @@ def _estimate_cost(
     try:
         import litellm
 
-        return litellm.completion_cost(
+        prompt_cost, completion_cost = litellm.cost_per_token(
             model=model,
-            prompt=str(prompt_tokens),
-            completion=str(completion_tokens),
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
         )
+        return prompt_cost + completion_cost
     except (ValueError, KeyError, TypeError, ImportError):
         return 0.0

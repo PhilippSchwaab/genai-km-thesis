@@ -1,0 +1,115 @@
+{
+  "artifact_id": "CS-06_Testing_Strategy_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/agentic_CS-06_Testing_Strategy_compiled_20260417T075645Z",
+  "total_kips": 11,
+  "recall": 0.9545,
+  "counts": {
+    "YES": 10,
+    "PARTIAL": 1,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.089436,
+  "eval_latency_seconds": 35.3,
+  "eval_tokens": 26816,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "A shell-script-based smoke test was the initial approach to integration testing",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that the initial integration testing work began with creating a semi-automated smoke-test script (`deployment/smoke-test.sh`) in the first commit, clearly identifying the shell-script-based smoke test as the initial approach to integration testing.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "The shell-script smoke test approach was abandoned after repeated debugging revealed it was unreliable",
+      "category": "RAT",
+      "implicit": true,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry documents that the smoke-test script underwent repeated bugfixing (multiple commits) and was ultimately removed, but it does not explicitly state that it was abandoned *because* it was found to be unreliable — the reason for abandonment is not clearly articulated.",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "E2E tests were removed from the project",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in both the Activity Narrative and Key Decisions sections that automated E2E tests were removed from the project, replaced by documented manual steps in the README.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Manual E2E testing steps were documented in the README as a fallback after automated E2E removal",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in both the Activity Narrative and Key Decisions sections that automated E2E tests were removed and replaced with documented manual steps in README.md, matching the key information point precisely.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "A dedicated C# integration test project was created and added to the solution as the replacement testing strategy",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that a dedicated `LKVLogistic.Cli.IntegrationTests` C# project was created and added to the solution (`LkvLogistik.sln`), with the project file and all associated test files documented in detail.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "A BillbeeMockFixture was created for mocking external API interactions in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `BillbeeMockFixture.cs` as a fixture file (65 lines) created within the integration test project, and fixtures are described in context of the `LKVLogistic.Cli.IntegrationTests` project used for testing, clearly indicating it was created for mocking external API (Billbee) interactions in tests.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "An SftpGoFixture was created for simulating SFTP file transfer operations in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `SftpGoFixture.cs` as a fixture file (107 lines) created within the integration test project, and the context makes clear it is used for SFTP-related testing alongside `SftpClientTests.cs`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Integration tests were created covering the SFTP client functionality",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `SftpClientTests.cs` (190 lines) as one of the test classes in the new integration test project, and the Key Decisions section states the project covers \"SFTP client, order feedback sync, order sync, product sync, and stock sync scenarios.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Integration tests were created for all four core sync operations: Orders, OrderFeedback, Products, and Stocks",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists all four integration test classes—`SyncOrderFeedbackIntegrationTests.cs`, `SyncOrdersIntegrationTests.cs`, `SyncProductsIntegrationTests.cs`, and `SyncStocksIntegrationTests.cs`—corresponding to the four core sync operations: OrderFeedback, Orders, Products, and Stocks.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "A CsvTestData helper class was created for generating structured test data",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `TestData/CsvTestData.cs` (41 lines) as a test data file within the integration test project, describing it as part of the structured test infrastructure created for generating test data.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-011",
+      "kip_text": "Integration test warnings and code quality issues were cleaned up in a follow-up pass",
+      "category": "IMP",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly documents a \"Warning Fixes and Cleanup\" phase (commits 8–9 on 2026-03-23) where integration test warnings were resolved and further code cleanup was performed across multiple test files.",
+      "score": 1.0
+    }
+  ]
+}

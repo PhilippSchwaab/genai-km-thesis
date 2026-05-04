@@ -5,12 +5,10 @@ meta:
   id: pipeline_generate_wiki
   architecture: pipeline
   version: 1
-  model: ollama_chat/gemma4:26b
+  model: anthropic/claude-sonnet-4-6
   sampling:
-    temperature: 1.0
+    temperature: 0.3
     max_tokens: 4096
-    top_p: 0.95
-    top_k: 64
   description: >
     Single-pass generation prompt for Architecture A.
     Takes an anonymized artifact and produces a structured wiki entry.

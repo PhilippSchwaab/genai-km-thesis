@@ -1,0 +1,97 @@
+{
+  "artifact_id": "CS-05_Error_Handling_and_Monitoring_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/pipeline_CS-05_Error_Handling_and_Monitoring_compiled_20260417T082259Z",
+  "total_kips": 9,
+  "recall": 1.0,
+  "counts": {
+    "YES": 9,
+    "PARTIAL": 0,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.089298,
+  "eval_latency_seconds": 37.05,
+  "eval_tokens": 27154,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "SyncOrderFeedback was changed to log errors instead of crashing the process",
+      "category": "FIX",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in multiple places that `SyncOrderFeedback` was changed from a fail-fast/failing approach to logging errors and continuing, including in the Overview, Decisions table (Decision #1), Changes Implemented section, and Commit History.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "SyncStocks error handling was similarly hardened to log rather than fail",
+      "category": "FIX",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that `SyncStocksCommand.cs` was modified to \"log errors rather than halt execution on failure\" in the Changes Implemented section, and it is listed in the files changed for commit `87bd6ea`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "CSV parsing in CsvAuftragsRueckmeldung and CsvBestandsmeldung was hardened to skip records with bad or missing data",
+      "category": "FIX",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that `CSVBestandsmeldung.cs` and `CsvAuftragsRueckmeldung.cs` were updated to skip records with missing fields and to suppress CSV reading exceptions, directly capturing the hardening of CSV parsing in both classes.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Email notifications were adopted as the error reporting mechanism for sync operations",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in Decision #4 that \"Error notifications will be delivered via SMTP email when an error is detected in any sync command,\" and this is further supported throughout the Changes Implemented section and commit history.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "An EmailNotificationService was created with SmtpConfiguration support",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that `EmailNotificationService.cs` and `SmtpConfiguration.cs` were added as new files, and describes the implementation of the full SMTP notification service with `SmtpConfiguration` support.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "Email error reporting was integrated into all four sync commands (Orders, OrderFeedback, Products, Stocks)",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in Decision #6 and the \"Changes Implemented\" section that email notification logic was added to all four sync commands (SyncOrderFeedback, SyncOrders, SyncProducts, SyncStocks), and the files changed confirm modifications to all four command files.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "SMTP credentials were added to Kubernetes secrets for both staging and production environments",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions that \"Credential secret examples added for production and staging Kubernetes overlays\" in the Changes Implemented section, and the Files Changed section lists both `.../overlays/lkv/production/credentials-secret.yaml.example` and `.../overlays/lkv/staging/credentials-secret.yaml.example` as added files, with the Blockers & Notes section further confirming \"Credential secret example files were added for both production and staging Kubernetes overlays as part of the SMTP configuration.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "SMTP was configured to use STARTTLS for secure email delivery",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in multiple places that SMTP was configured to use STARTTLS, including in the Decisions table (Decision #5), the Changes Implemented section (\"STARTTLS fix\"), and the Commit History (commit `d98d346` titled \"Fix To use STARTTLS\").",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Global try-catch error boundaries were added to all sync commands to ensure unhandled errors are captured and reported via email",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in Decision #6 and the \"Global try/catch wrapping\" implementation detail that all sync commands were wrapped in try/catch blocks to capture and forward all unhandled errors via SMTP email.",
+      "score": 1.0
+    }
+  ]
+}

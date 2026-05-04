@@ -32,9 +32,9 @@ class TestLoadPrompt:
     def test_sampling_loaded_from_yaml(self):
         prompt = load_prompt("pipeline_generate_wiki")
         assert isinstance(prompt.sampling, dict)
-        assert prompt.sampling["temperature"] == 1.0
-        assert prompt.sampling["top_p"] == 0.95
-        assert prompt.sampling["top_k"] == 64
+        assert prompt.sampling["temperature"] == 0.3
+        assert "top_p" not in prompt.sampling
+        assert "top_k" not in prompt.sampling
 
     def test_sampling_empty_when_missing(self):
         """Prompts without a sampling block get an empty dict."""

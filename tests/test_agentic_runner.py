@@ -90,7 +90,7 @@ def test_writes_metadata_json(mock_agent, results_dir):
 
     assert meta["architecture"] == "agentic"
     assert meta["prompt_id"] == "agentic_generate_wiki"
-    assert meta["model"] == "ollama_chat/gemma4:26b"
+    assert meta["model"] == "anthropic/claude-sonnet-4-6"
     assert "CS-06_Testing_Strategy_compiled" in meta["artifact_id"]
     assert meta["artifact_type"] == "development_activity"
     assert meta["total_tokens"] == 1800
@@ -129,13 +129,13 @@ def test_run_tag_appended_to_dir_name(mock_agent, results_dir):
 
 
 def test_sampling_defaults_from_yaml(mock_agent, results_dir):
-    """agentic_generate_wiki.yaml has Gemma 4 sampling params."""
+    """agentic_generate_wiki.yaml has Claude Sonnet sampling params."""
     run_dir = run_agentic("CS-06_Testing_Strategy_compiled.md")
     meta = json.loads((run_dir / "metadata.json").read_text())
-    assert meta["temperature"] == 1.0
-    assert meta["max_tokens"] == 4096
-    assert meta["top_p"] == 0.95
-    assert meta["top_k"] == 64
+    assert meta["temperature"] == 0.3
+    assert meta["max_tokens"] == 16384
+    assert meta.get("top_p") is None
+    assert meta.get("top_k") is None
 
 
 def test_cli_overrides_yaml_sampling(mock_agent, results_dir):
@@ -157,9 +157,9 @@ def test_create_agent_receives_yaml_params(mock_agent, results_dir):
     run_agentic("CS-06_Testing_Strategy_compiled.md")
     mock_agent.assert_called_once()
     call_kwargs = mock_agent.call_args[1]
-    assert call_kwargs["model_id"] == "ollama_chat/gemma4:26b"
-    assert call_kwargs["temperature"] == 1.0
-    assert call_kwargs["max_tokens"] == 4096
+    assert call_kwargs["model_id"] == "anthropic/claude-sonnet-4-6"
+    assert call_kwargs["temperature"] == 0.3
+    assert call_kwargs["max_tokens"] == 16384
 
 
 def test_create_agent_receives_overrides(mock_agent, results_dir):

@@ -127,13 +127,29 @@ def evaluate(
             weight_profile=weight_profile,
             eur_per_usd=eur_per_usd,
         )
-        typer.echo("\nMCDA Results:")
+        typer.echo("\nPer-Run MCDA Ranking:")
         for run in comparison["runs"]:
             arch = run["architecture"]
+            art = run["artifact_id"]
             score = run["total_score"]
             recall = run["raw_metrics"]["kip_recall"]
             latency = run["raw_metrics"]["latency_seconds"]
-            typer.echo(f"  {arch:10s}  MCDA={score:.4f}  recall={recall:.1%}  latency={latency:.1f}s")
+            cost = run["raw_metrics"]["cost_eur"]
+            typer.echo(f"  {arch:10s}  {art:45s}  MCDA={score:.4f}  recall={recall:.1%}  lat={latency:.1f}s  cost=€{cost:.4f}")
+
+        if "architecture_summary" in comparison:
+            typer.echo("\nArchitecture Summary:")
+            typer.echo(f"  {'Architecture':12s}  {'Artifacts':>9s}  {'Avg Recall':>10s}  {'Avg Latency':>11s}  {'Total Cost':>10s}  {'Avg MCDA':>8s}")
+            typer.echo(f"  {'─' * 12}  {'─' * 9}  {'─' * 10}  {'─' * 11}  {'─' * 10}  {'─' * 8}")
+            for s in comparison["architecture_summary"]:
+                typer.echo(
+                    f"  {s['architecture']:12s}  {s['num_artifacts']:>9d}  "
+                    f"{s['avg_kip_recall']:>9.1%}  "
+                    f"{s['avg_latency_seconds']:>10.1f}s  "
+                    f"€{s['total_cost_eur']:>9.4f}  "
+                    f"{s['avg_mcda_score']:>8.4f}"
+                )
+
         typer.echo(f"\nComparison saved → eval/metrics/comparison.json")
     else:
         for rd in resolved:

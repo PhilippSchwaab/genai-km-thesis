@@ -1,0 +1,97 @@
+{
+  "artifact_id": "CS-05_Error_Handling_and_Monitoring_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/agentic_CS-05_Error_Handling_and_Monitoring_compiled_20260417T083845Z",
+  "total_kips": 9,
+  "recall": 0.9444,
+  "counts": {
+    "YES": 8,
+    "PARTIAL": 1,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.06006,
+  "eval_latency_seconds": 30.0,
+  "eval_tokens": 17328,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "SyncOrderFeedback was changed to log errors instead of crashing the process",
+      "category": "FIX",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in both the Overview and the AB#3603 Technical Changes section that `SyncOrderFeedback` was changed to log errors instead of failing/crashing, and commit `87bd6ea` is described as changing \"error-handling behavior from failing to logging.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "SyncStocks error handling was similarly hardened to log rather than fail",
+      "category": "FIX",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in commit `87bd6ea` that `SyncStocksCommand.cs` was modified \"to change error-handling behavior from failing to logging,\" directly confirming that SyncStocks error handling was hardened to log rather than fail.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "CSV parsing in CsvAuftragsRueckmeldung and CsvBestandsmeldung was hardened to skip records with bad or missing data",
+      "category": "FIX",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes commits `59f5cde` and `532426c` updating both `CSVBestandsmeldung.cs` and `CsvAuftragsRueckmeldung.cs` to ignore bad data on missing fields and to ignore `ReadingExceptionErrors`, directly capturing the hardening of CSV parsing to skip records with bad or missing data.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Email notifications were adopted as the error reporting mechanism for sync operations",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry clearly describes email notifications via SMTP being adopted as the error reporting mechanism for sync operations, including dedicated commits, a pull request, and an entire work item (AB#3626) focused on adding email notifications when errors are detected across sync commands.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "An EmailNotificationService was created with SmtpConfiguration support",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions the creation of `EmailNotificationService.cs` and `SmtpConfiguration.cs` as new files added in commit `7f2d7e6`, and describes SMTP configuration support throughout the AB#3626 section.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "Email error reporting was integrated into all four sync commands (Orders, OrderFeedback, Products, Stocks)",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that email notification logic and try/catch blocks were added to all four sync commands (SyncOrderFeedbackCommand.cs, SyncOrdersCommand.cs, SyncProductsCommand.cs, and SyncStocksCommand.cs) in commits b3416f6 and e8bc570.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "SMTP credentials were added to Kubernetes secrets for both staging and production environments",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry mentions \"credential secret YAML examples for production and staging environments\" were added, but does not explicitly state these are Kubernetes secrets containing SMTP credentials.",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "SMTP was configured to use STARTTLS for secure email delivery",
+      "category": "CFG",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions STARTTLS multiple times, including a dedicated commit (`d98d346`) described as \"Fix: use STARTTLS\" that \"Updated `EmailNotificationService.cs` to use STARTTLS,\" and the AB#3626 goal statement references \"STARTTLS support\" for SMTP email delivery.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Global try-catch error boundaries were added to all sync commands to ensure unhandled errors are captured and reported via email",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes adding try/catch blocks across all four sync commands (`SyncOrderFeedbackCommand.cs`, `SyncOrdersCommand.cs`, `SyncProductsCommand.cs`, and `SyncStocksCommand.cs`) to catch all errors and send them via SMTP email notification, as detailed in commit `e8bc570` and PR #353.",
+      "score": 1.0
+    }
+  ]
+}
