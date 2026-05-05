@@ -1,0 +1,582 @@
+{
+  "profiles": [
+    "default",
+    "equal",
+    "operational",
+    "quality"
+  ],
+  "architectures": [
+    "A",
+    "B"
+  ],
+  "by_profile": {
+    "default": [
+      {
+        "architecture": "B",
+        "profile": "default",
+        "composite_score": 0.8827,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.3,
+            "weight_renormalized": 0.3,
+            "weighted": 0.3,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 37 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 123.0,
+            "normalized": 0.795,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.1988,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9650166666666667,
+            "normalized": 0.965,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.193,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 87.765,
+            "normalized": 0.7194,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.1079,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.21089349999999998,
+            "normalized": 0.8306,
+            "weight_default": 0.1,
+            "weight_renormalized": 0.1,
+            "weighted": 0.0831,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      },
+      {
+        "architecture": "A",
+        "profile": "default",
+        "composite_score": 0.8528,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.3,
+            "weight_renormalized": 0.3,
+            "weighted": 0.3,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 44 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 308.0,
+            "normalized": 0.4867,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.1217,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9667166666666667,
+            "normalized": 0.9667,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1933,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 28.933333333333334,
+            "normalized": 0.9189,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.1378,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.0396445,
+            "normalized": 1.0,
+            "weight_default": 0.1,
+            "weight_renormalized": 0.1,
+            "weighted": 0.1,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      }
+    ],
+    "equal": [
+      {
+        "architecture": "A",
+        "profile": "equal",
+        "composite_score": 0.8745,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.2,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 44 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 308.0,
+            "normalized": 0.4867,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.0973,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9667166666666667,
+            "normalized": 0.9667,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1933,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 28.933333333333334,
+            "normalized": 0.9189,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1838,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.0396445,
+            "normalized": 1.0,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.2,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      },
+      {
+        "architecture": "B",
+        "profile": "equal",
+        "composite_score": 0.862,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.2,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 37 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 123.0,
+            "normalized": 0.795,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.159,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9650166666666667,
+            "normalized": 0.965,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.193,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 87.765,
+            "normalized": 0.7194,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1439,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.21089349999999998,
+            "normalized": 0.8306,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1661,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      }
+    ],
+    "operational": [
+      {
+        "architecture": "A",
+        "profile": "operational",
+        "composite_score": 0.8961,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.15,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 44 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 308.0,
+            "normalized": 0.4867,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.073,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9667166666666667,
+            "normalized": 0.9667,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1933,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 28.933333333333334,
+            "normalized": 0.9189,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.2297,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.0396445,
+            "normalized": 1.0,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.25,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      },
+      {
+        "architecture": "B",
+        "profile": "operational",
+        "composite_score": 0.8498,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.15,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 37 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 123.0,
+            "normalized": 0.795,
+            "weight_default": 0.15,
+            "weight_renormalized": 0.15,
+            "weighted": 0.1192,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9650166666666667,
+            "normalized": 0.965,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.193,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 87.765,
+            "normalized": 0.7194,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.1799,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.21089349999999998,
+            "normalized": 0.8306,
+            "weight_default": 0.25,
+            "weight_renormalized": 0.25,
+            "weighted": 0.2077,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      }
+    ],
+    "quality": [
+      {
+        "architecture": "B",
+        "profile": "quality",
+        "composite_score": 0.909,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.4,
+            "weight_renormalized": 0.4,
+            "weighted": 0.4,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 37 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 123.0,
+            "normalized": 0.795,
+            "weight_default": 0.3,
+            "weight_renormalized": 0.3,
+            "weighted": 0.2385,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9650166666666667,
+            "normalized": 0.965,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.193,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 87.765,
+            "normalized": 0.7194,
+            "weight_default": 0.05,
+            "weight_renormalized": 0.05,
+            "weighted": 0.036,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.21089349999999998,
+            "normalized": 0.8306,
+            "weight_default": 0.05,
+            "weight_renormalized": 0.05,
+            "weighted": 0.0415,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      },
+      {
+        "architecture": "A",
+        "profile": "quality",
+        "composite_score": 0.8353,
+        "coverage": [
+          "accuracy",
+          "verification_effort",
+          "completeness",
+          "speed",
+          "cost"
+        ],
+        "excluded": [],
+        "criteria": [
+          {
+            "name": "accuracy",
+            "raw_value": 1.0,
+            "normalized": 1.0,
+            "weight_default": 0.4,
+            "weight_renormalized": 0.4,
+            "weighted": 0.4,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Direct human scoring: 0 factual-error flags across 44 reviewed blocks (1.000 support rate). Automated cross-check gate not applicable to direct human input."
+          },
+          {
+            "name": "verification_effort",
+            "raw_value": 308.0,
+            "normalized": 0.4867,
+            "weight_default": 0.3,
+            "weight_renormalized": 0.3,
+            "weighted": 0.146,
+            "included": true,
+            "gate_status": "pass",
+            "gate_detail": "Cohen's d = 3.09 on n_A=2, n_B=2; |d| >= 0.5."
+          },
+          {
+            "name": "completeness",
+            "raw_value": 0.9667166666666667,
+            "normalized": 0.9667,
+            "weight_default": 0.2,
+            "weight_renormalized": 0.2,
+            "weighted": 0.1933,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "speed",
+            "raw_value": 28.933333333333334,
+            "normalized": 0.9189,
+            "weight_default": 0.05,
+            "weight_renormalized": 0.05,
+            "weighted": 0.0459,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          },
+          {
+            "name": "cost",
+            "raw_value": 0.0396445,
+            "normalized": 1.0,
+            "weight_default": 0.05,
+            "weight_renormalized": 0.05,
+            "weighted": 0.05,
+            "included": true,
+            "gate_status": null,
+            "gate_detail": ""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,98 +1,151 @@
 # MCDA Criteria & Stakeholder Weights
 
-## Source
+This document narrates the rationale behind the MCDA configuration. The
+machine-readable parameters live in [`eval/mcda_config.yaml`](../../eval/mcda_config.yaml);
+the math (aspiration-level Simple Additive Weighting with input-reliability gates)
+is implemented in [`eval/harness/mcda.py`](../../eval/harness/mcda.py); the
+end-to-end orchestrator that produces composite scores is
+[`eval/run_mcda.py`](../../eval/run_mcda.py).
 
-Weights derived from a Mentimeter ranking session with 6 Meshmakers stakeholders (February 2026). Participants ranked five evaluation criteria for an AI-based documentation system by importance.
+## Source of the weights
 
-## Scope Decision
+A Mentimeter ranking session with six Meshmakers stakeholders (February 2026)
+ranked five criteria for an AI-assisted knowledge-capture system. The weights
+below are the proportional translation of that rank ordering and constitute the
+default stakeholder profile used in the MCDA. The full methodology, including
+the score-normalization formula and the gate conditions, is committed in
+thesis §3.3.2.
 
-Stakeholders originally identified five criteria: Accuracy, Verification Effort, Completeness, Speed, and Cost. Of these, three can be fully operationalized with automated, reproducible metrics within the scope of this thesis. Two (Accuracy and Verification Effort) require multiple expert review sessions to measure rigorously — resources not available within the project constraints.
+## The five criteria
 
-Rather than producing thin measurements for all five, the evaluation focuses on three criteria with robust metrics. Accuracy and Verification Effort are discussed qualitatively in Chapter 5 and identified as evaluation extensions in Section 6.3. The stakeholder weights are redistributed proportionally across the three measured criteria, preserving the original relative ranking.
+| # | Criterion           | Weight | Direction | Aspiration `x*` | Anti-aspiration `x⁻` |
+|---|---------------------|--------|-----------|-----------------|----------------------|
+| 1 | Accuracy            | 0.30   | benefit   | 1.0             | 0.5                  |
+| 2 | Verification Effort | 0.25   | cost      | 0 sec           | 600 sec              |
+| 3 | Completeness        | 0.20   | benefit   | 1.0             | 0.0                  |
+| 4 | Speed               | 0.15   | cost      | 5 sec           | 300 sec              |
+| 5 | Cost                | 0.10   | cost      | $0.05           | $1.00                |
 
-### Weight Redistribution
+Aspiration values are stakeholder-meaningful targets: a raw value at or beyond
+`x*` is coerced to `r = 1`, a raw value at or beyond `x⁻` is coerced to `r = 0`,
+and values in between are interpolated linearly. This preserves the *magnitude*
+of differences instead of collapsing to a relative ranking between two
+architectures (the failure mode of min-max normalization on n=2).
 
-Original stakeholder ranking: Accuracy (30%), Verification Effort (25%), Completeness (20%), Speed (15%), Cost (10%).
+### 1. Accuracy
 
-Redistributed across measured criteria (preserving relative proportions of Completeness, Speed, Cost):
+**Stakeholder framing:** the content is factually correct.
 
-| Original Criterion   | Original Weight | Status                           |
-|----------------------|-----------------|----------------------------------|
-| Accuracy             | 0.30            | Discussed qualitatively in Ch. 5 |
-| Verification Effort  | 0.25            | Discussed qualitatively in Ch. 5 |
-| Completeness         | 0.20 → **0.44** | Measured (primary criterion)     |
-| Speed                | 0.15 → **0.33** | Measured                         |
-| Cost                 | 0.10 → **0.22** | Measured                         |
+**Operationalized as:** the proportion of generated claims traceable to the
+source artifact, judged by the expert reviewers (`1 - factual_error_rate`).
+Block-level `factual_error` flags from the HITL review UI are the operational
+unit; one such flag means the block contains at least one untraceable or
+contradictory claim. Computed per architecture across all reviewed blocks.
 
-Redistribution method: `new_weight = original_weight / sum(original_weights_of_measured_criteria)`. Sum of measured = 0.20 + 0.15 + 0.10 = 0.45. Completeness: 0.20/0.45 ≈ 0.44, Speed: 0.15/0.45 ≈ 0.33, Cost: 0.10/0.45 ≈ 0.22.
+### 2. Verification Effort
 
----
+**Stakeholder framing:** easy for a human to check and approve.
 
-## Measured Criteria
+**Operationalized as:** mean per-session time-on-task from the HITL review UI,
+in seconds. The browser-blur-aware timer in the review UI excludes window
+switching and interruptions from the time-on-task total.
 
-### 1. Completeness (44%)
+### 3. Completeness
 
-No important details from the source artifact are missing in the generated entry.
+**Stakeholder framing:** no important details are missing.
 
-**Operationalized as:**
+**Operationalized as:** KIP recall — the proportion of gold-standard Key
+Information Points captured in the generated entry. Each KIP is scored
+YES (1.0), PARTIAL (0.5), or NO (0.0) by an LLM-as-judge against the
+generated entry; recall is `(YES + 0.5·PARTIAL) / total_KIPs`. Per-architecture
+score is the mean across the six Control Set artifacts.
 
-- **KIP Recall** — percentage of gold-standard Key Information Points captured in the output: `KIPs matched / total KIPs`. Scored via LLM-as-judge (YES/PARTIAL/NO per KIP).
+### 4. Speed
 
-### 2. Speed (33%)
+**Stakeholder framing:** the draft is available quickly.
 
-The time from input artifact to finished wiki draft.
+**Operationalized as:** end-to-end latency in seconds from input submission to
+final wiki entry, captured by the harness. For the agentic architecture this
+includes all reasoning steps and tool calls. Per-architecture score is the mean
+across the six Control Set artifacts.
 
-**Operationalized as:**
+### 5. Cost
 
-- **End-to-end latency** (seconds) — wall-clock time from API call to final output, including all retries and intermediate steps. Logged automatically by the evaluation harness.
+**Stakeholder framing:** affordable to run per artifact.
 
-### 3. Cost (22%)
+**Operationalized as:** total API cost per artifact in USD, summed across all
+model calls (extracted from `metadata.json` via LiteLLM's cost tracking). Per
+architecture is the mean across the six Control Set artifacts. Aspiration
+$0.05 reflects a cost-effective model baseline; $1.00 the SME budget tolerance
+for higher-quality outputs.
 
-The financial cost of running the system per artifact.
+## Aggregation: aspiration-level SAW
 
-**Operationalized as:**
-
-- **API cost per artifact** (EUR) — computed from LiteLLM's built-in cost tracking (token counts × model pricing).
-
----
-
-## Qualitative Criteria (Discussed in Ch. 5, Not Scored in MCDA)
-
-### Accuracy
-
-Whether the generated wiki entry is factually correct. Hallucinations and distortions observed during the author's manual review of outputs are reported qualitatively. A rigorous operationalization (e.g., per-statement grounding checks with multiple expert reviewers) exceeds the scope of this thesis.
-
-### Verification Effort
-
-The effort a domain expert needs to review and approve the output. A single expert review session will provide anecdotal observations on relative effort between architectures, reported as a qualitative comparison rather than a scored metric.
-
----
-
-## MCDA Aggregation Method
-
-Weighted Sum Model (WSM): for each architecture, normalize each metric to a 0–1 scale, then compute the weighted aggregate score.
+For each architecture, each criterion's raw value is normalized to `[0, 1]`
+using thesis equation 3.4 (benefit) or 3.5 (cost):
 
 ```
-Score(A) = Σ (w_i × normalized_metric_i(A))
+r_benefit = clip( (x - x⁻) / (x* - x⁻), 0, 1 )
+r_cost    = clip( (x⁻ - x) / (x⁻ - x*), 0, 1 )
 ```
 
-Normalization: higher-is-better metrics (recall) use `value / max_value`. Lower-is-better metrics (cost, latency) use `1 - (value / max_value)`.
+The composite score is the weighted sum:
 
-## Sensitivity Analysis
+```
+U(A_i) = Σ_j  w_j · r_ij        with Σ_j w_j = 1
+```
 
-To test robustness of the final ranking, the thesis reports results under alternative weight distributions and notes whether the ranking changes.
+## Input-reliability gates
 
-| Profile              | Completeness | Speed | Cost |
-|----------------------|-------------|-------|------|
-| Stakeholder-derived  | 0.44        | 0.33  | 0.22 |
-| Equal                | 0.33        | 0.33  | 0.33 |
-| Completeness-dominated | 0.70      | 0.15  | 0.15 |
-| Cost-dominated       | 0.20        | 0.20  | 0.60 |
+Two criteria depend on small-sample human-judgment instruments and carry
+explicit inclusion gates (thesis §3.3.2 Robustness conditions):
 
-## Stakeholder Context
+- **Verification Effort** is included only if Cohen's `d ≥ 0.5` between
+  architectures' mean per-session time-on-task (between-architecture mean
+  difference / within-architecture pooled SD). Failing the gate excludes
+  Verification Effort from the aggregate.
+- **Accuracy** is included only if at least one review session per architecture
+  has been completed. The thesis-mentioned spot-check gate validates an
+  *automated* approximation against manual review; with direct human scoring
+  as the input there is no automated approximation to validate, so the gate is
+  satisfied by construction whenever review data exists.
 
-Stakeholders identified **time** as the dominant documentation barrier, followed by complexity, too many systems, and low motivation. Their wish list emphasized automation (no manual uploading), a single access point, and actionable to-dos from meetings. The high weight on Completeness reflects that stakeholders prioritize a system that captures all important information — the core promise of automated knowledge synthesis.
+When a gate fails or its input is not yet available, the criterion is excluded
+from the aggregate and the remaining weights are renormalized to sum to 1. The
+included-criterion coverage is reported alongside the composite score so a
+high score backed by partial coverage is not mistaken for one under full
+coverage. Per §3.3.3 the review-derived inputs are reported descriptively in
+Chapter 5 rather than as inferential evidence.
 
-## Relation to KIP Scoring
+## Sensitivity profiles
 
-KIP Recall (the primary metric for Completeness) is scored via LLM-as-judge using the prompt defined in `prompts/eval_kip_scorer.yaml`. Each KIP from the gold-standard registry is checked against the generated output (YES/PARTIAL/NO). Recall is computed as: `(YES_count + 0.5 × PARTIAL_count) / total_KIPs`. Per-KIP judgments are stored for qualitative analysis (e.g., per-category recall breakdown as a secondary lens, not scored in MCDA).
+The architecture ranking is reported under four weight profiles. Stable
+ranking across profiles is taken as evidence of robustness to reasonable
+variations in stakeholder priorities.
+
+| Profile     | Accuracy | Ver. Effort | Completeness | Speed | Cost |
+|-------------|---------:|------------:|-------------:|------:|-----:|
+| Default     |   0.30   |    0.25     |    0.20      | 0.15  | 0.10 |
+| Equal       |   0.20   |    0.20     |    0.20      | 0.20  | 0.20 |
+| Quality     |   0.40   |    0.30     |    0.20      | 0.05  | 0.05 |
+| Operational |   0.15   |    0.15     |    0.20      | 0.25  | 0.25 |
+
+## Stakeholder context
+
+Stakeholders identified **time** as the dominant documentation barrier,
+followed by complexity, too many systems, and low motivation. Their wish list
+emphasized automation, a single access point, and actionable to-dos from
+meetings. Together, the high default weights on Accuracy and Verification
+Effort (55 % combined) reflect that the system must produce a trustworthy,
+easily-verifiable output even at the expense of processing time or
+operational cost.
+
+## Outputs
+
+- `eval/metrics/<label>_mcda_summary.md` — canonical human-readable report for
+  one run iteration (per-architecture inputs, per-session audit table,
+  gate decisions, composite scores per profile, per-criterion contributions).
+- `eval/metrics/<label>_mcda.json` — machine-readable form of the same.
+
+Both are produced by `km mcda` (default label `Run 1`); pass `--label "Run 2"`
+after Run 2 results land.

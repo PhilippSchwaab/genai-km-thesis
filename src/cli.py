@@ -99,70 +99,60 @@ def _complete_run_dirs(incomplete: str) -> list[str]:
 def evaluate(
     run_dirs: list[str] = typer.Argument(..., help="Run directory names in eval/results/.", autocompletion=_complete_run_dirs),
     judge_model: Optional[str] = typer.Option(None, help="Override the judge model from the eval prompt."),
-    compare: bool = typer.Option(False, help="Run MCDA comparison across all provided runs."),
-    weight_profile: Optional[str] = typer.Option(None, help="MCDA sensitivity profile (equal, completeness_dominated, cost_dominated)."),
-    eur_per_usd: float = typer.Option(0.92, help="EUR/USD exchange rate for cost conversion."),
 ):
-    """Evaluate generated wiki entries against KIP ground truth.
+    """Score generated wiki entries against the KIP ground truth.
 
-    Pass one or more run directory names (from eval/results/).
-    Use --compare to compute MCDA scores across all runs.
+    Runs the LLM-as-judge over each provided run directory, writes
+    ``kip_eval.json`` alongside the run outputs, and prints the
+    per-run KIP-recall summary. Composite-score aggregation across
+    runs and architectures is handled separately by ``km mcda``.
     """
-    from eval.harness.run_eval import evaluate_and_compare, evaluate_run
+    from eval.harness.run_eval import evaluate_run
 
     results_base = Path(__file__).resolve().parents[1] / "eval" / "results"
     resolved = [results_base / name for name in run_dirs]
 
-    # Validate all dirs exist
     for rd in resolved:
         if not rd.is_dir():
             typer.echo(f"Error: run directory not found: {rd}", err=True)
             raise typer.Exit(code=1)
 
-    if compare and len(resolved) > 1:
-        typer.echo(f"Evaluating and comparing {len(resolved)} runs...")
-        comparison = evaluate_and_compare(
-            *resolved,
-            judge_model=judge_model,
-            weight_profile=weight_profile,
-            eur_per_usd=eur_per_usd,
+    for rd in resolved:
+        typer.echo(f"Evaluating {rd.name}...")
+        report = evaluate_run(rd, judge_model=judge_model)
+        counts = report.counts
+        typer.echo(
+            f"  KIP Recall: {report.recall:.1%} "
+            f"({counts['YES']} YES, {counts['PARTIAL']} PARTIAL, {counts['NO']} NO "
+            f"out of {report.total_kips} KIPs)"
         )
-        typer.echo("\nPer-Run MCDA Ranking:")
-        for run in comparison["runs"]:
-            arch = run["architecture"]
-            art = run["artifact_id"]
-            score = run["total_score"]
-            recall = run["raw_metrics"]["kip_recall"]
-            latency = run["raw_metrics"]["latency_seconds"]
-            cost = run["raw_metrics"]["cost_eur"]
-            typer.echo(f"  {arch:10s}  {art:45s}  MCDA={score:.4f}  recall={recall:.1%}  lat={latency:.1f}s  cost=€{cost:.4f}")
+        typer.echo(f"  Eval cost: ${report.call_log.total_cost_usd:.4f}")
+        typer.echo(f"  Results → {rd / 'kip_eval.json'}")
 
-        if "architecture_summary" in comparison:
-            typer.echo("\nArchitecture Summary:")
-            typer.echo(f"  {'Architecture':12s}  {'Artifacts':>9s}  {'Avg Recall':>10s}  {'Avg Latency':>11s}  {'Total Cost':>10s}  {'Avg MCDA':>8s}")
-            typer.echo(f"  {'─' * 12}  {'─' * 9}  {'─' * 10}  {'─' * 11}  {'─' * 10}  {'─' * 8}")
-            for s in comparison["architecture_summary"]:
-                typer.echo(
-                    f"  {s['architecture']:12s}  {s['num_artifacts']:>9d}  "
-                    f"{s['avg_kip_recall']:>9.1%}  "
-                    f"{s['avg_latency_seconds']:>10.1f}s  "
-                    f"€{s['total_cost_eur']:>9.4f}  "
-                    f"{s['avg_mcda_score']:>8.4f}"
-                )
 
-        typer.echo(f"\nComparison saved → eval/metrics/comparison.json")
-    else:
-        for rd in resolved:
-            typer.echo(f"Evaluating {rd.name}...")
-            report = evaluate_run(rd, judge_model=judge_model)
-            counts = report.counts
-            typer.echo(
-                f"  KIP Recall: {report.recall:.1%} "
-                f"({counts['YES']} YES, {counts['PARTIAL']} PARTIAL, {counts['NO']} NO "
-                f"out of {report.total_kips} KIPs)"
-            )
-            typer.echo(f"  Eval cost: ${report.call_log.total_cost_usd:.4f}")
-            typer.echo(f"  Results → {rd / 'kip_eval.json'}")
+@app.command()
+def mcda(
+    label: str = typer.Option("Run 1", help="Label used in the report title and output filename stem."),
+    frontend: Optional[Path] = typer.Option(None, help="Path to the genai-km-frontend repo (default: ~/PycharmProjects/genai-km-frontend)."),
+    config: Optional[Path] = typer.Option(None, help="Override the path to mcda_config.yaml."),
+):
+    """Compute the aspiration-SAW composite score across architectures.
+
+    Walks ``eval/results/``, joins per-architecture metrics with the
+    review-UI aggregates from the frontend, applies the gates from
+    thesis §3.3.2, and writes ``eval/<label>_mcda_summary.md`` plus
+    ``eval/<label>_mcda.json`` (label normalised to lowercase, no
+    spaces). Designed to be re-runnable each time review or generation
+    data is updated.
+    """
+    from eval.run_mcda import main as run_mcda_main
+
+    argv: list[str] = ["--label", label]
+    if frontend is not None:
+        argv += ["--frontend", str(frontend)]
+    if config is not None:
+        argv += ["--config", str(config)]
+    raise typer.Exit(code=run_mcda_main(argv))
 
 
 @app.command()

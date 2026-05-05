@@ -1,42 +1,91 @@
-# MCDA Configuration — Stakeholder-Weighted Criteria (Reduced Scope)
-# Source: Mentimeter session with 6 Meshmakers stakeholders, Feb 2026
-# Original 5 criteria reduced to 3 measured criteria.
-# Accuracy and Verification Effort discussed qualitatively in Ch. 5.
-# See docs/requirements/mcda_criteria.md for full rationale.
+# MCDA configuration --- thesis §3.3.2 spec.
+# Five stakeholder-derived criteria with aspiration-level normalization
+# (Form 2 of Tzeng & Huang, 2011, §4.1) and explicit input-reliability
+# gates on Accuracy and Verification Effort (§3.3.2 Robustness conditions).
+#
+# Direction:
+#   benefit  -> higher raw values are better
+#   cost     -> lower raw values are better
+#
+# Aspiration (x_star) is the best plausible value (raw score >= aspiration
+# is coerced to r=1). Anti-aspiration (x_minus) is the worst-tolerable
+# value (raw score <= anti-aspiration is coerced to r=0).
+#
+# Gates are evaluated separately by run_mcda.py; if a gate fails or its
+# input data is unavailable, the criterion is excluded from the aggregate
+# and the remaining weights are renormalized to sum to 1. Coverage
+# (the set of included criteria) is reported alongside the score.
 
 criteria:
 
+  accuracy:
+    weight: 0.30
+    direction: benefit
+    aspiration: 1.0
+    anti_aspiration: 0.5
+    metric: claim_support_rate         # 1 - (factual-error flags / reviewed blocks), from the HITL review UI (§3.3.3)
+    rationale: "Bounded by definition; 0.5 baseline."
+    gate:
+      type: review_session_coverage    # at least one review session per architecture
+      min_sessions_per_architecture: 1
+
+  verification_effort:
+    weight: 0.25
+    direction: cost
+    aspiration: 0.0                    # seconds
+    anti_aspiration: 600.0             # seconds
+    metric: mean_time_on_task_seconds  # mean per-session time-on-task from review-UI telemetry
+    rationale: "Goal: no review needed."
+    gate:
+      type: cohens_d
+      threshold: 0.5
+
   completeness:
-    weight: 0.44
-    direction: higher_is_better
-    metrics:
-      - kip_recall               # KIPs matched / total KIPs
+    weight: 0.20
+    direction: benefit
+    aspiration: 1.0
+    anti_aspiration: 0.0
+    metric: kip_recall                 # KIPs matched / total KIPs in baseline
+    rationale: "Bounded by definition (proportion of KIPs captured)."
 
   speed:
-    weight: 0.33
-    direction: lower_is_better   # faster = better
-    metrics:
-      - latency_seconds          # wall-clock time, input to final output
+    weight: 0.15
+    direction: cost
+    aspiration: 5.0                    # seconds; sub-second feels instant
+    anti_aspiration: 300.0             # seconds; 5 minutes feels too slow
+    metric: latency_seconds            # mean end-to-end latency per artifact, averaged across artifacts
+    rationale: "Sub-second feels instant; 5 min: too slow."
 
   cost:
-    weight: 0.22
-    direction: lower_is_better   # cheaper = better
-    metrics:
-      - cost_per_artifact_eur    # via LiteLLM cost tracking
+    weight: 0.10
+    direction: cost
+    aspiration: 0.05                   # USD per artifact
+    anti_aspiration: 1.00              # USD per artifact
+    metric: cost_usd_per_artifact      # mean total cost per artifact, averaged across artifacts
+    rationale: "Cost-effective model baseline; SME budget tolerance."
 
-# Alternative weight sets for sensitivity analysis
+# Default profile is implied by the per-criterion `weight` fields above.
+# Sensitivity profiles override those weights for robustness analysis
+# (thesis §3.3.2, Table tab:sensitivity-profiles).
 sensitivity_profiles:
+
   equal:
-    completeness: 0.33
-    speed: 0.33
-    cost: 0.33
-
-  completeness_dominated:
-    completeness: 0.70
-    speed: 0.15
-    cost: 0.15
-
-  cost_dominated:
+    accuracy: 0.20
+    verification_effort: 0.20
     completeness: 0.20
     speed: 0.20
-    cost: 0.60
+    cost: 0.20
+
+  quality:
+    accuracy: 0.40
+    verification_effort: 0.30
+    completeness: 0.20
+    speed: 0.05
+    cost: 0.05
+
+  operational:
+    accuracy: 0.15
+    verification_effort: 0.15
+    completeness: 0.20
+    speed: 0.25
+    cost: 0.25

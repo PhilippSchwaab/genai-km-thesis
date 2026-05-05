@@ -35,9 +35,12 @@ src/agentic/      Architecture B — Agentic Workflow (Strands Agents SDK)
 src/common/       Shared utilities (LLM client, PII redaction, prompt loader)
 prompts/          Versioned prompt YAMLs (generation + evaluation)
 data/             raw → anonymized → KIPs (gold standard)
-eval/harness/     KIP scorer (LLM-as-judge), MCDA comparison
-eval/results/     Per-run outputs (wiki_entry.md, metadata.json, kip_eval.json)
-eval/metrics/     Cross-run comparison results
+eval/harness/     KIP scorer (LLM-as-judge) and MCDA math (aspiration SAW)
+eval/results/     Per-run raw outputs (wiki_entry.md, metadata.json, kip_eval.json)
+eval/metrics/     Cross-run derived aggregates (run1_mcda_summary.md + run1_mcda.json)
+eval/run_mcda.py  MCDA orchestrator: per-architecture aggregation + gates + canonical Run-N report
+eval/review_stats.py  Library: review-UI loaders, ReviewData, Cohen's d
+eval/mcda_config.yaml 5 criteria + 4 sensitivity profiles per thesis §3.3.2
 docs/             Architecture docs, DSR changelog, future plans
 ```
 
@@ -53,13 +56,16 @@ km generate --arch agentic  CS-06_Testing_Strategy_compiled.md
 # Override prompt template or sampling
 km generate --arch pipeline --prompt my_prompt_id --temperature 0.8 --top-p 0.9 CS-06*.md
 
-# Evaluate runs (KIP recall per run)
+# Score runs against KIP ground truth (writes kip_eval.json per run dir)
 km evaluate pipeline_CS-06_..._20260417T060240Z agentic_CS-06_..._20260417T061058Z \
   --judge-model ollama_chat/gemma4:26b
 
-# Compare runs (MCDA ranking)
-km evaluate pipeline_CS-06_... agentic_CS-06_... --compare
-km evaluate pipeline_CS-06_... agentic_CS-06_... --compare --weight-profile equal
+# MCDA composite ranking across architectures (writes eval/metrics/run1_mcda_summary.md + run1_mcda.json)
+km mcda
+km mcda --label "Run 2"          # re-run after Run 2 results land
+
+# Override the frontend repo path (default: $KM_FRONTEND_PATH or ~/PycharmProjects/genai-km-frontend)
+km mcda --frontend /path/to/genai-km-frontend
 
 # Other
 km anonymize             # redact PII: data/raw/ → data/anonymized/
