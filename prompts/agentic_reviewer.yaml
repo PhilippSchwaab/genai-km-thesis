@@ -51,6 +51,8 @@ messages:
         the source.
       - Attribution: references to participants that are missing,
         wrong, or use the wrong anonymized identifier (e.g. [Person 1]).
+      - Markdown formatting: the draft must parse as valid
+        CommonMark / GitHub-Flavored Markdown.
 
       Output format (intermediate work, not user-facing):
       - Bullet list only; no preamble or restatement of the source.
