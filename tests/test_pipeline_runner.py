@@ -80,9 +80,10 @@ def test_writes_messages_json(mock_complete, results_dir):
     run_dir = run_pipeline("CS-06_Testing_Strategy_compiled.md")
     messages = json.loads((run_dir / "messages.json").read_text())
 
-    assert len(messages) == 2
+    # 1 system + 2*k exemplar (CL-02) + 1 live user.
+    assert len(messages) >= 2
     assert messages[0]["role"] == "system"
-    assert messages[1]["role"] == "user"
+    assert messages[-1]["role"] == "user"
 
 
 # ── Directory naming ─────────────────────────────────────────────────

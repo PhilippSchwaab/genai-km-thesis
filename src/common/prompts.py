@@ -58,9 +58,12 @@ class Prompt:
     Prompts may declare per-audience scaffolding under ``meta.audiences``.
     Each audience entry is a dict with at least a ``schema`` key whose
     value is the section structure spliced into the rendered user turn.
-    Prompts without an ``audiences`` block render unchanged from earlier
-    versions; the audience parameter is opt-in and orthogonal to all
-    other rendering inputs.
+    Each audience may additionally declare an ``exemplars`` list of
+    ``{artifact_id, artifact_type, source, entry}`` items spliced as
+    user/assistant turns before the live user request (CL-02, thesis
+    §4.2.3). Prompts without an ``audiences`` block render unchanged
+    from earlier versions; the audience parameter is opt-in and
+    orthogonal to all other rendering inputs.
     """
 
     id: str
@@ -69,7 +72,7 @@ class Prompt:
     model: str
     description: str
     sampling: dict[str, float]
-    audiences: dict[str, dict[str, str]]   # name -> {"schema": "..."}
+    audiences: dict[str, dict]   # name -> {"schema": "...", "exemplars": [...]}
     _messages: list[dict[str, str]]
 
     def render(
@@ -82,7 +85,13 @@ class Prompt:
 
         If ``audience`` is provided, the audience's ``schema`` is
         substituted into the ``{audience_schema}`` placeholder and the
-        audience name into the ``{audience}`` placeholder. Raises:
+        audience name into the ``{audience}`` placeholder. If the
+        audience also declares exemplars, each is spliced as a
+        user/assistant pair before the live user turn, with the
+        exemplar's user message rendered through the **same** user
+        template the live request uses (so the model sees identical
+        wrappers across exemplars and the live turn — format-consistent
+        few-shot, per Min et al. EMNLP 2022). Raises:
 
         - ``ValueError`` if the prompt has no ``audiences`` block.
         - ``KeyError`` if the audience name is not declared.
@@ -102,10 +111,42 @@ class Prompt:
             kwargs["audience"] = audience
             kwargs["audience_schema"] = self.audiences[audience]["schema"]
 
-        return [
+        base = [
             {"role": m["role"], "content": m["content"].format(**kwargs)}
             for m in self._messages
         ]
+
+        if audience is None:
+            return base
+        exemplars = self.audiences[audience].get("exemplars", []) or []
+        if not exemplars:
+            return base
+
+        # Render each exemplar through the live user template so the
+        # model sees the same wrapper for exemplars and the live turn.
+        user_template = next(
+            m["content"] for m in self._messages if m["role"] == "user"
+        )
+        schema = self.audiences[audience]["schema"]
+        exemplar_messages: list[dict[str, str]] = []
+        for ex in exemplars:
+            user_content = user_template.format(
+                audience=audience,
+                audience_schema=schema,
+                artifact_id=ex.get("artifact_id", "exemplar"),
+                artifact_type=ex.get("artifact_type", "example"),
+                artifact_text=ex["source"],
+            )
+            exemplar_messages.append({"role": "user", "content": user_content})
+            exemplar_messages.append({"role": "assistant", "content": ex["entry"]})
+
+        # Splice the exemplar pairs between the system message(s) and
+        # the live user turn. The live user turn is the first user
+        # message in `base` after the substitution above.
+        live_user_idx = next(
+            i for i, m in enumerate(base) if m["role"] == "user"
+        )
+        return base[:live_user_idx] + exemplar_messages + base[live_user_idx:]
 
     @property
     def template_vars(self) -> set[str]:
@@ -140,6 +181,13 @@ def load_prompt(prompt_id: str) -> Prompt:
                 f"Prompt {prompt_id!r} audience {name!r} must be a "
                 f"mapping with a 'schema' key (got {type(body).__name__})."
             )
+        for i, ex in enumerate(body.get("exemplars") or []):
+            if not isinstance(ex, dict) or "source" not in ex or "entry" not in ex:
+                raise ValueError(
+                    f"Prompt {prompt_id!r} audience {name!r} exemplar "
+                    f"#{i} must be a mapping with 'source' and 'entry' "
+                    f"keys (CL-02 schema)."
+                )
     return Prompt(
         id=meta["id"],
         architecture=meta["architecture"],

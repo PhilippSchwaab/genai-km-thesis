@@ -52,11 +52,13 @@ class TestPromptRender:
             artifact_id="test-meeting",
             artifact_text="Some meeting text here.",
         )
-        assert len(messages) == 2
+        # 1 system + 2*k exemplar + 1 live user (k=2 → 6 total).
+        assert len(messages) >= 2
         assert messages[0]["role"] == "system"
-        assert messages[1]["role"] == "user"
-        assert "test-meeting" in messages[1]["content"]
-        assert "Some meeting text here." in messages[1]["content"]
+        assert messages[-1]["role"] == "user"
+        # Live values appear only in the final user turn.
+        assert "test-meeting" in messages[-1]["content"]
+        assert "Some meeting text here." in messages[-1]["content"]
 
     def test_render_missing_variable_raises(self):
         prompt = load_prompt("pipeline_generate_wiki")
@@ -168,6 +170,132 @@ class TestAudiences:
         kwargs = {var: f"test_{var}" for var in prompt.template_vars}
         messages = prompt.render(**kwargs)
         assert len(messages) >= 1
+
+
+# ── CL-02: few-shot exemplars per audience ──────────────────────────────
+
+
+class TestExemplars:
+    """The CL-02 few-shot exemplars: synthetic (source, entry) pairs
+    declared per audience under `meta.audiences.<name>.exemplars`,
+    spliced as user/assistant turns before the live user request. The
+    exemplar user message uses the **same** user-template wrapper as
+    the live request so the model sees a format-consistent few-shot
+    history (Min et al. EMNLP 2022 demonstrate that format consistency
+    is one of the load-bearing properties of few-shot prompting)."""
+
+    def test_each_audience_declares_two_exemplars(self):
+        for prompt_id in ("pipeline_generate_wiki", "agentic_generate_wiki"):
+            prompt = load_prompt(prompt_id)
+            for audience, body in prompt.audiences.items():
+                exemplars = body.get("exemplars") or []
+                assert len(exemplars) == 2, (
+                    f"{prompt_id}/{audience} must declare exactly 2 "
+                    f"exemplars, got {len(exemplars)}"
+                )
+
+    def test_exemplar_source_and_entry_present(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        for audience, body in prompt.audiences.items():
+            for i, ex in enumerate(body["exemplars"]):
+                assert ex["source"].strip(), f"{audience}#{i} empty source"
+                assert ex["entry"].strip(), f"{audience}#{i} empty entry"
+                assert "artifact_id" in ex, f"{audience}#{i} missing artifact_id"
+                assert "artifact_type" in ex, f"{audience}#{i} missing artifact_type"
+
+    def test_render_splices_exemplar_pairs(self):
+        """With k=2 exemplars, render output is 1 system + 2*k user/asst
+        + 1 live user = 6 messages, in that order."""
+        prompt = load_prompt("pipeline_generate_wiki")
+        messages = prompt.render(
+            audience="development",
+            artifact_type="support_report",
+            artifact_id="LIVE",
+            artifact_text="LIVE BODY",
+        )
+        assert len(messages) == 6
+        roles = [m["role"] for m in messages]
+        assert roles == ["system", "user", "assistant", "user", "assistant", "user"]
+
+    def test_exemplar_user_uses_same_wrapper_as_live_user(self):
+        """Format-consistency check: the exemplar user message contains
+        the same fixed wrapper substrings as the live user message.
+        Markers chosen to be unbroken across YAML literal-block lines."""
+        prompt = load_prompt("pipeline_generate_wiki")
+        messages = prompt.render(
+            audience="development",
+            artifact_type="support_report",
+            artifact_id="LIVE",
+            artifact_text="LIVE BODY",
+        )
+        live_user = messages[-1]["content"]
+        first_exemplar_user = messages[1]["content"]
+        for marker in (
+            "Source artifact (",
+            "Convert the source artifact above",
+            "tailored for the development audience",
+            "## Summary",
+        ):
+            assert marker in live_user, f"missing in live: {marker!r}"
+            assert marker in first_exemplar_user, f"missing in exemplar: {marker!r}"
+
+    def test_live_user_appears_last(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        messages = prompt.render(
+            audience="development",
+            artifact_type="support_report",
+            artifact_id="LIVE_ARTIFACT_ID",
+            artifact_text="LIVE_BODY_MARKER",
+        )
+        # Only the LAST user turn carries the live artifact body.
+        assert "LIVE_BODY_MARKER" in messages[-1]["content"]
+        for m in messages[:-1]:
+            assert "LIVE_BODY_MARKER" not in m["content"]
+
+    def test_exemplar_count_matches_audience(self):
+        """Different audiences route to their own exemplar sets, not
+        a shared/cached list."""
+        prompt = load_prompt("pipeline_generate_wiki")
+        marketing_msgs = prompt.render(
+            audience="marketing",
+            artifact_type="support_report",
+            artifact_id="L",
+            artifact_text="b",
+        )
+        architect_msgs = prompt.render(
+            audience="architect",
+            artifact_type="support_report",
+            artifact_id="L",
+            artifact_text="b",
+        )
+        # Both have 2 exemplars but different content.
+        assert marketing_msgs[2]["content"] != architect_msgs[2]["content"]
+
+    def test_load_prompt_rejects_malformed_exemplar(self, tmp_path, monkeypatch):
+        """Loader-time validation: a missing 'source' or 'entry' key
+        must fail at load_prompt(), not silently at render time."""
+        bad = tmp_path / "bad_prompt.yaml"
+        bad.write_text(
+            "meta:\n"
+            "  id: bad_prompt\n"
+            "  architecture: pipeline\n"
+            "  version: 1\n"
+            "  model: anthropic/claude-sonnet-4-6\n"
+            "  description: malformed exemplar test\n"
+            "  audiences:\n"
+            "    development:\n"
+            "      schema: '## H'\n"
+            "      exemplars:\n"
+            "        - artifact_id: x\n"
+            "          source: 's'\n"  # missing 'entry'
+            "messages:\n"
+            "  - role: user\n"
+            "    content: '{audience} {audience_schema} {artifact_text}'\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr("src.common.prompts._PROMPTS_DIR", tmp_path)
+        with pytest.raises(ValueError):
+            load_prompt("bad_prompt")
 
 
 class TestGuessArtifactType:

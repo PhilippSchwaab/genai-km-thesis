@@ -10,12 +10,18 @@
 #     render time from `meta.audiences.<name>`. Audience defaults to
 #     `development` (matches the Run-1 schema closest); `marketing` and
 #     `architect` are the additional audiences for the Run-2 showcase.
+#   - CL-02: two synthetic exemplars per audience under `.exemplars`,
+#     spliced as user/assistant pairs before the live user turn. The
+#     exemplar user messages share the live user-template wrapper so
+#     format consistency is preserved (Min et al. EMNLP 2022). Sources
+#     are synthetic (no Control-Set leakage) and intentionally diverse
+#     in input shape so format invariance is demonstrated.
 
 meta:
   id: pipeline_generate_wiki
   architecture: pipeline
   version: 2
-  model: anthropic/claude-sonnet-4-6
+  model: anthropic/claude-sonnet-4-6 #  ollama_chat/gemma4:26b
   sampling:
     temperature: 0.3
     max_tokens: 4096
@@ -23,9 +29,6 @@ meta:
     Single-pass generation prompt for Architecture A.
     Takes an anonymized artifact and produces a structured wiki entry
     tailored for the requested audience.
-
-  # Per-audience section schemas. Adding a new audience is a YAML edit;
-  # no code changes required.
   audiences:
     development:
       schema: |
@@ -35,6 +38,67 @@ meta:
         ## Blockers and open questions
         ## Implementation detail (commits, files, line counts where present)
         ## Sources
+      exemplars:
+        - artifact_id: example_pdf_export
+          artifact_type: support_report
+          source: |
+            Title: PDF export feature for analytics dashboard
+            Status: shipped
+            Date: 2026-02-15
+
+            Background: [Customer A] requested the ability to export the analytics dashboard as PDF for offline distribution to executive stakeholders.
+
+            Implementation: [Person 1] reviewed two options with [Person 2]. Decision: use Puppeteer with a server-side rendering helper. Alternative considered: wkhtmltopdf, rejected because chart rendering quality on Recharts components was below acceptable. PR #614 merged 2026-02-14, deployed 2026-02-15.
+
+            Customer feedback: "Reduced our manual reporting time by approximately four hours per week."
+          entry: |
+            ## Summary
+            PDF export feature shipped on 2026-02-15 for the analytics dashboard.
+
+            ## Decisions
+            - Use Puppeteer with a server-side rendering helper for PDF generation. Driver: chart rendering quality. Alternative considered: wkhtmltopdf (rejected on chart-quality grounds for Recharts components).
+
+            ## Action items (with owner and due date where stated)
+            - (none recorded)
+
+            ## Blockers and open questions
+            - (none recorded)
+
+            ## Implementation detail (commits, files, line counts where present)
+            - PR #614 merged 2026-02-14, deployed 2026-02-15.
+
+            ## Sources
+            - PDF export feature report (2026-02-15).
+        - artifact_id: example_standup_w12
+          artifact_type: development_activity
+          source: |
+            Title: Standup notes — Sprint 24, mid-sprint check-in
+            Date: 2026-W12
+
+            [Person 3]: Database connection pool exhausted in staging during yesterday's load test. Connection wait p99 spiked to 4 seconds. Decision: bump max_connections from 200 to 500. Driver: load-test latency. Alternative considered: introduce PgBouncer for connection multiplexing, rejected because it adds an operational dependency for marginal additional headroom at the team's current load.
+
+            [Person 4]: PR #482 merged. Closes #401 (decimal rounding bug in invoice totals).
+
+            Blocker: Schema migration #M-12 awaiting DBA approval. Target: end of week.
+          entry: |
+            ## Summary
+            Mid-sprint standup capturing one infrastructure decision, one merged bug fix, and one blocker.
+
+            ## Decisions
+            - Bump `max_connections` from 200 to 500. Driver: load-test connection wait p99 spiked to 4 seconds. Alternative considered: PgBouncer connection multiplexing (rejected on operational complexity).
+
+            ## Action items (with owner and due date where stated)
+            - (none recorded)
+
+            ## Blockers and open questions
+            - Schema migration #M-12 awaiting DBA approval. Target: end of week.
+
+            ## Implementation detail (commits, files, line counts where present)
+            - PR #482 merged. Closes #401 (decimal rounding bug in invoice totals).
+
+            ## Sources
+            - Standup notes, Sprint 24 mid-sprint check-in.
+
     marketing:
       schema: |
         ## Outcome (one paragraph: what was achieved, in plain language)
@@ -42,13 +106,130 @@ meta:
         ## Business impact (only if explicitly stated in the source)
         ## Status and next milestone
         ## Sources
+      exemplars:
+        - artifact_id: example_pdf_export
+          artifact_type: support_report
+          source: |
+            Title: PDF export feature for analytics dashboard
+            Status: shipped
+            Date: 2026-02-15
+
+            Background: [Customer A] requested the ability to export the analytics dashboard as PDF for offline distribution to executive stakeholders.
+
+            Implementation: [Person 1] reviewed two options with [Person 2]. Decision: use Puppeteer with a server-side rendering helper. Alternative considered: wkhtmltopdf, rejected because chart rendering quality on Recharts components was below acceptable. PR #614 merged 2026-02-14, deployed 2026-02-15.
+
+            Customer feedback: "Reduced our manual reporting time by approximately four hours per week."
+          entry: |
+            ## Outcome (one paragraph: what was achieved, in plain language)
+            The analytics dashboard now supports PDF export for offline distribution, addressing a request from [Customer A] for sharing reports with executive stakeholders.
+
+            ## Stakeholders involved (anonymized identifiers)
+            - [Customer A] (requestor)
+            - [Person 1] (reviewer)
+            - [Person 2] (reviewer)
+
+            ## Business impact (only if explicitly stated in the source)
+            [Customer A] reported a reduction of approximately four hours per week in manual reporting time.
+
+            ## Status and next milestone
+            - Status: Shipped on 2026-02-15.
+            - Next milestone: (not recorded in source)
+
+            ## Sources
+            - PDF export feature report (2026-02-15).
+        - artifact_id: example_standup_w12
+          artifact_type: development_activity
+          source: |
+            Title: Standup notes — Sprint 24, mid-sprint check-in
+            Date: 2026-W12
+
+            [Person 3]: Database connection pool exhausted in staging during yesterday's load test. Connection wait p99 spiked to 4 seconds. Decision: bump max_connections from 200 to 500. Driver: load-test latency. Alternative considered: introduce PgBouncer for connection multiplexing, rejected because it adds an operational dependency for marginal additional headroom at the team's current load.
+
+            [Person 4]: PR #482 merged. Closes #401 (decimal rounding bug in invoice totals).
+
+            Blocker: Schema migration #M-12 awaiting DBA approval. Target: end of week.
+          entry: |
+            ## Outcome (one paragraph: what was achieved, in plain language)
+            Internal sprint progress: one bug fix merged and a database tuning change in progress; one schema change is pending approval.
+
+            ## Stakeholders involved (anonymized identifiers)
+            - [Person 3] (database tuning owner)
+            - [Person 4] (PR #482 author)
+            - DBA team (approval pending)
+
+            ## Business impact (only if explicitly stated in the source)
+            - (none recorded — internal infrastructure work)
+
+            ## Status and next milestone
+            - Status: Bug fix merged; database tuning underway.
+            - Next milestone: DBA approval for schema migration #M-12 by end of week.
+
+            ## Sources
+            - Standup notes, Sprint 24 mid-sprint check-in.
+
     architect:
       schema: |
         ## Summary
         ## Decisions (each paired with its driver and at least one alternative considered)
-        ## Trade-offs and constraints
+        ## Consequences
         ## Open questions and risks
         ## Sources
+      exemplars:
+        - artifact_id: example_pdf_export
+          artifact_type: support_report
+          source: |
+            Title: PDF export feature for analytics dashboard
+            Status: shipped
+            Date: 2026-02-15
+
+            Background: [Customer A] requested the ability to export the analytics dashboard as PDF for offline distribution to executive stakeholders.
+
+            Implementation: [Person 1] reviewed two options with [Person 2]. Decision: use Puppeteer with a server-side rendering helper. Alternative considered: wkhtmltopdf, rejected because chart rendering quality on Recharts components was below acceptable. PR #614 merged 2026-02-14, deployed 2026-02-15.
+
+            Customer feedback: "Reduced our manual reporting time by approximately four hours per week."
+          entry: |
+            ## Summary
+            PDF export was implemented using Puppeteer; the lighter-weight alternative was rejected on chart-rendering quality.
+
+            ## Decisions (each paired with its driver and at least one alternative considered)
+            - Use Puppeteer with a server-side rendering helper. Driver: chart rendering quality on Recharts components. Alternative considered: wkhtmltopdf (rejected because chart rendering quality was below acceptable).
+
+            ## Consequences
+            - Puppeteer brings a Chromium dependency to the server-side rendering helper.
+            - The rejected wkhtmltopdf alternative would have been lighter-weight but did not meet chart-rendering quality requirements.
+
+            ## Open questions and risks
+            - (none recorded)
+
+            ## Sources
+            - PDF export feature report (2026-02-15).
+        - artifact_id: example_standup_w12
+          artifact_type: development_activity
+          source: |
+            Title: Standup notes — Sprint 24, mid-sprint check-in
+            Date: 2026-W12
+
+            [Person 3]: Database connection pool exhausted in staging during yesterday's load test. Connection wait p99 spiked to 4 seconds. Decision: bump max_connections from 200 to 500. Driver: load-test latency. Alternative considered: introduce PgBouncer for connection multiplexing, rejected because it adds an operational dependency for marginal additional headroom at the team's current load.
+
+            [Person 4]: PR #482 merged. Closes #401 (decimal rounding bug in invoice totals).
+
+            Blocker: Schema migration #M-12 awaiting DBA approval. Target: end of week.
+          entry: |
+            ## Summary
+            Sprint standup captured a database tuning decision and operational follow-ups.
+
+            ## Decisions (each paired with its driver and at least one alternative considered)
+            - Bump `max_connections` from 200 to 500. Driver: load-test connection wait p99 spiked to 4 seconds. Alternative considered: PgBouncer connection multiplexing (rejected because adding a new operational component was not justified for the marginal additional headroom at current load).
+
+            ## Consequences
+            - Higher `max_connections` increases per-connection memory pressure on the database server.
+            - The PgBouncer alternative would have introduced a new operational component to deploy, monitor, and version.
+
+            ## Open questions and risks
+            - Schema migration #M-12 (DBA-pending) could shift the connection profile and may need re-evaluation after deploy.
+
+            ## Sources
+            - Standup notes, Sprint 24 mid-sprint check-in.
 
 messages:
   - role: system

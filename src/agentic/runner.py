@@ -103,10 +103,19 @@ def _create_agent(
     max_tokens: int,
     system_prompt: str,
     tools: list,
+    history: list[dict[str, str]] | None = None,
     top_p: float | None = None,
     top_k: int | None = None,
 ) -> Any:
-    """Create a Strands Agent. Separated for testability."""
+    """Create a Strands Agent. Separated for testability.
+
+    ``history`` (optional) seeds the agent's conversation with prior
+    turns; CL-02 uses this to splice few-shot exemplar (user, assistant)
+    pairs in front of the live request. Strands' default
+    ``preserve_context=False`` resets to the seeded history before each
+    invocation, which is the desired behavior for stable exemplars
+    across runs.
+    """
     from strands import Agent
     from strands.models.litellm import LiteLLMModel
 
@@ -123,11 +132,14 @@ def _create_agent(
         model_id=model_id,
         params=params,
     )
-    return Agent(
-        model=llm,
-        tools=tools,
-        system_prompt=system_prompt,
-    )
+    agent_kwargs: dict = {
+        "model": llm,
+        "tools": tools,
+        "system_prompt": system_prompt,
+    }
+    if history:
+        agent_kwargs["messages"] = history
+    return Agent(**agent_kwargs)
 
 
 # ── Runner ──────────────────────────────────────────────────────────────
@@ -199,14 +211,12 @@ def run_agentic(
 
     rendered = prompt.render(**render_kwargs)
 
-    # Extract system prompt and user message from the rendered messages
-    system_prompt = ""
-    user_message = ""
-    for msg in rendered:
-        if msg["role"] == "system":
-            system_prompt += msg["content"]
-        elif msg["role"] == "user":
-            user_message += msg["content"]
+    # Strands expects (system_prompt, history, live_user_message) split:
+    #   - system_prompt: concatenated system messages.
+    #   - history: every (user, assistant) turn before the live request
+    #              (CL-02 exemplar pairs).
+    #   - user_message: the final user turn (the live request).
+    system_prompt, history, user_message = _split_for_strands(rendered)
 
     # ── 2. Configure and run the agent ──────────────────────────────
     tools = _make_tools()
@@ -216,6 +226,7 @@ def run_agentic(
         max_tokens=eff_max_tokens,
         system_prompt=system_prompt,
         tools=tools,
+        history=history,
         top_p=eff_top_p,
         top_k=eff_top_k,
     )
@@ -281,6 +292,47 @@ def run_agentic(
     )
 
     return run_dir
+
+
+def _split_for_strands(
+    rendered: list[dict[str, str]],
+) -> tuple[str, list[dict], str]:
+    """Split a rendered message list into (system, history, user_message).
+
+    ``rendered`` follows the LiteLLM convention: a list of
+    ``{"role": "...", "content": "..."}`` dicts. The live request is
+    always the *last* message in the list (a user turn). Anything
+    earlier with role ``user`` or ``assistant`` is exemplar history;
+    system messages are concatenated.
+
+    The ``history`` entries returned are wrapped in Strands' content-block
+    shape (``[{"text": "..."}]``). Strands auto-wraps the prompt passed
+    to ``agent(...)`` but does NOT auto-wrap messages passed through the
+    ``Agent(messages=...)`` constructor — passing a plain string there
+    causes Strands to iterate the string character-by-character looking
+    for content blocks (raising ``TypeError: content_type=<S> | ...``).
+    """
+    if not rendered or rendered[-1]["role"] != "user":
+        raise ValueError(
+            "Rendered messages must end with a user turn (the live request)."
+        )
+    system_parts: list[str] = []
+    history: list[dict] = []
+    last_idx = len(rendered) - 1
+    for i, msg in enumerate(rendered):
+        if i == last_idx:
+            user_message = msg["content"]
+        elif msg["role"] == "system":
+            system_parts.append(msg["content"])
+        else:
+            # Wrap as Strands content-block list; required by the
+            # messages= constructor parameter (live user is wrapped by
+            # the agent() entry point automatically).
+            history.append({
+                "role": msg["role"],
+                "content": [{"text": msg["content"]}],
+            })
+    return "".join(system_parts), history, user_message
 
 
 def _extract_wiki_entry(raw_text: str) -> str:

@@ -106,9 +106,10 @@ def test_writes_messages_json(mock_agent, results_dir):
     run_dir = run_agentic("CS-06_Testing_Strategy_compiled.md")
     messages = json.loads((run_dir / "messages.json").read_text())
 
-    assert len(messages) == 2
+    # 1 system + 2*k exemplar (CL-02) + 1 live user.
+    assert len(messages) >= 2
     assert messages[0]["role"] == "system"
-    assert messages[1]["role"] == "user"
+    assert messages[-1]["role"] == "user"
 
 
 # ── Directory naming ────────────────────────────────────────────────────
@@ -262,3 +263,87 @@ class TestAudiencePersistence:
                 "CS-06_Testing_Strategy_compiled.md",
                 audience="finance",
             )
+
+
+# ── CL-02: exemplar history routed through Strands' messages= ──────────
+
+
+class TestExemplarHistoryRouting:
+    """Verify the agentic runner splits the rendered messages into
+    (system_prompt, history, user_message) and forwards the history
+    list to Strands' Agent via the ``messages=`` constructor parameter.
+    The live user turn must reach the agent's __call__ method, not the
+    initial messages list."""
+
+    def test_split_for_strands_helper_isolates_live_user(self):
+        from src.agentic.runner import _split_for_strands
+
+        rendered = [
+            {"role": "system", "content": "SYS"},
+            {"role": "user", "content": "EX1_USER"},
+            {"role": "assistant", "content": "EX1_ASST"},
+            {"role": "user", "content": "EX2_USER"},
+            {"role": "assistant", "content": "EX2_ASST"},
+            {"role": "user", "content": "LIVE_USER"},
+        ]
+        sys_prompt, history, user_msg = _split_for_strands(rendered)
+        assert sys_prompt == "SYS"
+        assert user_msg == "LIVE_USER"
+        assert [m["role"] for m in history] == ["user", "assistant", "user", "assistant"]
+        # Exemplar content wrapped in Strands content-block shape
+        # (required by Agent(messages=...); agent(...) auto-wraps).
+        assert history[0]["content"] == [{"text": "EX1_USER"}]
+        assert history[2]["content"] == [{"text": "EX2_USER"}]
+
+    def test_split_rejects_non_user_terminal(self):
+        from src.agentic.runner import _split_for_strands
+
+        rendered = [
+            {"role": "system", "content": "SYS"},
+            {"role": "user", "content": "U"},
+            {"role": "assistant", "content": "A"},  # ends with assistant
+        ]
+        with pytest.raises(ValueError):
+            _split_for_strands(rendered)
+
+    def test_create_agent_receives_history_kwarg(self, mock_agent, results_dir):
+        run_agentic(
+            "CS-06_Testing_Strategy_compiled.md",
+            audience="development",
+        )
+        mock_agent.assert_called_once()
+        call_kwargs = mock_agent.call_args[1]
+        history = call_kwargs["history"]
+        # Two exemplars per audience -> 4 messages of history.
+        assert len(history) == 4
+        assert [m["role"] for m in history] == ["user", "assistant", "user", "assistant"]
+
+    def test_history_uses_correct_audience_exemplars(self, mock_agent, results_dir):
+        """Verify the history reflects the requested audience's exemplars,
+        not another audience's. With shared synthetic sources across
+        audiences, the audience-specific signal is in the schema headers
+        the entry uses (e.g. '## Outcome', '## Stakeholders involved'
+        appear only in marketing-rendered entries). History entries are
+        wrapped as Strands content blocks ([{"text": ...}])."""
+        run_agentic(
+            "CS-06_Testing_Strategy_compiled.md",
+            audience="marketing",
+        )
+        call_kwargs = mock_agent.call_args[1]
+        history = call_kwargs["history"]
+        history_text = " ".join(
+            block["text"] for m in history for block in m["content"]
+        )
+        # Marketing-only schema headers must appear in the assistant
+        # turns (the audience-specific entries).
+        assert "## Outcome" in history_text
+        assert "## Business impact" in history_text
+        # Development-only headers must NOT appear in the assistant
+        # entries (they should appear only in their own user-wrapper
+        # schema reminder, not in marketing rendered entries).
+        marketing_assistant_text = " ".join(
+            block["text"]
+            for m in history if m["role"] == "assistant"
+            for block in m["content"]
+        )
+        assert "## Implementation detail" not in marketing_assistant_text
