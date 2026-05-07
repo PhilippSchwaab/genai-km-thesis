@@ -19,6 +19,9 @@ def _fake_metrics_summary():
             "inputTokens": 1200,
             "outputTokens": 600,
             "totalTokens": 1800,
+            # CL-05: cache hit/write counters surfaced by Strands' LiteLLMModel.
+            "cacheReadInputTokens": 800,
+            "cacheWriteInputTokens": 200,
         },
         "tool_usage": {
             "total_tool_calls": 2,
@@ -39,12 +42,18 @@ class _FakeAgentResult:
 
 
 class _FakeAgent:
-    """Mimics a Strands Agent: callable, returns _FakeAgentResult."""
+    """Mimics a Strands Agent: callable, returns _FakeAgentResult.
+
+    Captures the prompt argument so tests can assert on its shape (CL-05
+    forwards a list of content blocks with a cachePoint instead of a
+    plain string)."""
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+        self.last_prompt = None
 
-    def __call__(self, user_message: str):
+    def __call__(self, prompt):
+        self.last_prompt = prompt
         return _FakeAgentResult()
 
 
@@ -53,7 +62,11 @@ class _FakeAgent:
 
 @pytest.fixture()
 def mock_agent():
-    """Patch _create_agent and _make_tools so we don't need strands installed."""
+    """Patch _create_agent and _make_tools so we don't need strands installed.
+
+    Yields the patched _create_agent mock; the underlying _FakeAgent that
+    is returned to the runner can be retrieved via ``mock_create.return_value``
+    for tests that need to inspect what the runner sent to it."""
     fake = _FakeAgent()
     with (
         patch("src.agentic.runner._create_agent", return_value=fake) as mock_create,
@@ -96,6 +109,9 @@ def test_writes_metadata_json(mock_agent, results_dir):
     assert meta["total_tokens"] == 1800
     assert meta["prompt_tokens"] == 1200
     assert meta["completion_tokens"] == 600
+    # CL-05: cache token fields persist for §5.3 hit-rate analysis.
+    assert meta["cache_read_input_tokens"] == 800
+    assert meta["cache_creation_input_tokens"] == 200
     # tool calls (2) + 1 for the initial call
     assert meta["num_calls"] == 3
     assert "timestamp" in meta
@@ -317,6 +333,107 @@ class TestExemplarHistoryRouting:
         # Two exemplars per audience -> 4 messages of history.
         assert len(history) == 4
         assert [m["role"] for m in history] == ["user", "assistant", "user", "assistant"]
+
+    def test_split_user_message_inserts_cachepoint_at_marker(self):
+        """CL-05: the live user message is split at the source-artifact /
+        instruction boundary with a cachePoint between the two text
+        blocks."""
+        from src.agentic.runner import (
+            _USER_INSTRUCTION_MARKER,
+            _split_user_message_for_cache,
+        )
+
+        msg = (
+            "Source artifact (X, type: Y):\n---\nBODY\n---\n\n"
+            f"{_USER_INSTRUCTION_MARKER} into a wiki entry.\n\n"
+            "## Heading"
+        )
+        blocks = _split_user_message_for_cache(msg)
+        assert len(blocks) == 3
+        assert blocks[0]["text"].endswith("---\n\n")
+        assert blocks[1] == {"cachePoint": {"type": "default"}}
+        assert blocks[2]["text"].startswith(_USER_INSTRUCTION_MARKER)
+
+    def test_split_user_message_no_marker_falls_back_to_single_block(self):
+        """Defensive: if the template ever changes such that the marker
+        disappears, the runner produces a single text block (no cache
+        breakpoint inside the user) rather than crashing."""
+        from src.agentic.runner import _split_user_message_for_cache
+
+        blocks = _split_user_message_for_cache("nothing matches here")
+        assert blocks == [{"text": "nothing matches here"}]
+
+    def test_runner_forwards_system_prompt_with_cachepoint(
+        self, mock_agent, results_dir
+    ):
+        """CL-05: the system prompt reaching the agent is a content-block
+        list ending in a cachePoint."""
+        run_agentic("CS-06_Testing_Strategy_compiled.md", audience="development")
+        sys_prompt = mock_agent.call_args[1]["system_prompt"]
+        assert isinstance(sys_prompt, list)
+        assert "text" in sys_prompt[0]
+        assert sys_prompt[-1] == {"cachePoint": {"type": "default"}}
+
+    def test_runner_forwards_user_content_with_cachepoint(
+        self, mock_agent, results_dir
+    ):
+        """CL-05: the live user prompt reaching agent(...) is a content-
+        block list with a cachePoint between source body and instruction."""
+        run_agentic("CS-06_Testing_Strategy_compiled.md", audience="development")
+        fake_agent = mock_agent.return_value
+        prompt = fake_agent.last_prompt
+        assert isinstance(prompt, list)
+        # Either a single block (defensive fallback) or 3 blocks (the
+        # source / cachePoint / instruction split). Production path is
+        # the 3-block form.
+        assert len(prompt) == 3
+        assert {"cachePoint": {"type": "default"}} in prompt
+        # Source artifact body precedes the cachePoint; instruction follows.
+        cp_idx = prompt.index({"cachePoint": {"type": "default"}})
+        assert "Source artifact" in prompt[cp_idx - 1]["text"]
+        from src.agentic.runner import _USER_INSTRUCTION_MARKER
+        assert _USER_INSTRUCTION_MARKER in prompt[cp_idx + 1]["text"]
+
+    def test_estimate_cost_passes_cache_token_fields_to_litellm(self):
+        """CL-05: _estimate_cost must forward cache token fields to
+        ``litellm.cost_per_token`` so cache-read / cache-write rates
+        apply correctly."""
+        pytest.importorskip("litellm")
+        from unittest.mock import patch
+
+        from src.agentic.runner import _estimate_cost
+
+        # Patch the litellm.cost_per_token call at the location the
+        # runner imports it (lazy import inside the function).
+        with patch("litellm.cost_per_token", return_value=(0.0123, 0.0456)) as cpt:
+            cost = _estimate_cost(
+                "anthropic/claude-sonnet-4-6",
+                prompt_tokens=1000,
+                completion_tokens=500,
+                cache_read_tokens=800,
+                cache_write_tokens=200,
+            )
+        assert cost == pytest.approx(0.0579)
+        cpt.assert_called_once()
+        kwargs = cpt.call_args.kwargs
+        assert kwargs["cache_creation_input_tokens"] == 200
+        assert kwargs["cache_read_input_tokens"] == 800
+
+    def test_estimate_cost_zero_cache_tokens_is_legacy_behaviour(self):
+        """When cache fields are zero, _estimate_cost still returns a
+        sensible cost (the standard prompt + completion rates)."""
+        pytest.importorskip("litellm")
+        from unittest.mock import patch
+
+        from src.agentic.runner import _estimate_cost
+
+        with patch("litellm.cost_per_token", return_value=(0.001, 0.002)):
+            cost = _estimate_cost(
+                "anthropic/claude-sonnet-4-6",
+                prompt_tokens=1000,
+                completion_tokens=500,
+            )
+        assert cost == pytest.approx(0.003)
 
     def test_history_uses_correct_audience_exemplars(self, mock_agent, results_dir):
         """Verify the history reflects the requested audience's exemplars,
