@@ -1,10 +1,14 @@
 # Architecture A — Structured Pipeline: Wiki Entry Generation
 # Converts an anonymized business artifact into a structured wiki entry.
+#
+# v2 (CL-03, thesis §4.2.3): user turn reordered so the source artifact
+# precedes the task instruction. This makes the source the stable prefix
+# and the instruction the dynamic suffix, enabling cache breakpoints (CL-05).
 
 meta:
   id: pipeline_generate_wiki
   architecture: pipeline
-  version: 1
+  version: 2
   model: anthropic/claude-sonnet-4-6
   sampling:
     temperature: 0.3
@@ -30,9 +34,9 @@ messages:
 
   - role: user
     content: |
-      Convert the following {artifact_type} into a structured wiki entry.
-
-      Source artifact ({artifact_id}):
+      Source artifact ({artifact_id}, type: {artifact_type}):
       ---
       {artifact_text}
       ---
+
+      Convert the source artifact above into a structured wiki entry.

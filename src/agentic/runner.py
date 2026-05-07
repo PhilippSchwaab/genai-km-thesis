@@ -36,6 +36,17 @@ _RESULTS_DIR = _PROJECT_ROOT / "eval" / "results"
 
 _SOURCE_TEXT: str = ""  # set per-run so tools can access the source
 
+# Concision directive appended to every tool response (CL-04, thesis §4.2.3).
+# Mirrors the "Intermediate output format" block in the agentic system prompt
+# so the cap holds whether the model is responding to a tool result or to its
+# own internal REVIEW step. Intermediate-only by design; the final wiki entry
+# produced by the REVISE step is unconstrained.
+_CONCISION_DIRECTIVE = (
+    "Output format: bullet list only, no preamble or restatement of the "
+    "source. Hard cap of 150 words. Output exactly `NONE` if no issues are "
+    "found."
+)
+
 
 def _make_tools() -> list:
     """Build the Strands @tool functions.
@@ -60,7 +71,8 @@ def _make_tools() -> list:
             "---\n"
             f"{draft}\n"
             "---\n\n"
-            "List every fact in the source that is NOT captured in the draft."
+            "List every fact in the source that is NOT captured in the draft.\n\n"
+            f"{_CONCISION_DIRECTIVE}"
         )
 
     @tool
@@ -78,7 +90,8 @@ def _make_tools() -> list:
             "---\n"
             f"{draft}\n"
             "---\n\n"
-            "List every claim in the draft that is NOT supported by the source."
+            "List every claim in the draft that is NOT supported by the source.\n\n"
+            f"{_CONCISION_DIRECTIVE}"
         )
 
     return [check_completeness, check_hallucinations]

@@ -17,7 +17,7 @@ class TestLoadPrompt:
         prompt = load_prompt("pipeline_generate_wiki")
         assert prompt.id == "pipeline_generate_wiki"
         assert prompt.architecture == "pipeline"
-        assert prompt.version == 1
+        assert prompt.version == 2
         assert isinstance(prompt.model, str)
 
     def test_load_nonexistent_prompt_raises(self):

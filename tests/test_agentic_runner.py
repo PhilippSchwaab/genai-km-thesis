@@ -185,3 +185,52 @@ def test_support_report_artifact_type(mock_agent, results_dir):
     run_dir = run_agentic("CS-01_Archive_Backup_report.md")
     meta = json.loads((run_dir / "metadata.json").read_text())
     assert meta["artifact_type"] == "support_report"
+
+
+# ── CL-04: concision directives on intermediate calls ──────────────────
+
+
+class TestConcisionDirective:
+    """Verify the §4.2.3 CL-04 concision directive is consistently applied
+    to intermediate work (REVIEW step + tool responses) but not to the
+    final wiki entry. Intermediate-only by design; the rendered system
+    prompt explicitly limits the directive's scope."""
+
+    def test_directive_constant_carries_required_elements(self):
+        from src.agentic.runner import _CONCISION_DIRECTIVE
+
+        text = _CONCISION_DIRECTIVE.lower()
+        assert "bullet" in text, "directive must specify bullet-list format"
+        assert "150" in text, "directive must specify the 150-word cap"
+        assert "none" in text, "directive must specify the NONE empty marker"
+        assert "preamble" in text or "restatement" in text, (
+            "directive must forbid preamble / source restatement"
+        )
+
+    def test_system_prompt_includes_intermediate_format_block(self):
+        from src.common.prompts import load_prompt
+
+        prompt = load_prompt("agentic_generate_wiki")
+        sys_text = prompt._messages[0]["content"]
+        sys_lower = sys_text.lower()
+        # Same four elements as the runner constant.
+        assert "bullet" in sys_lower
+        assert "150" in sys_lower
+        assert "none" in sys_lower
+        # Scope must be explicit: intermediate only, final unconstrained.
+        assert "intermediate" in sys_lower, (
+            "system prompt must mark the directive as intermediate-only"
+        )
+        assert "final" in sys_lower and "unconstrained" in sys_lower, (
+            "system prompt must explicitly exempt the final wiki entry"
+        )
+
+    def test_review_step_still_enumerates_three_checks(self):
+        """Adding the format block must not erase the REVIEW substance."""
+        from src.common.prompts import load_prompt
+
+        prompt = load_prompt("agentic_generate_wiki")
+        sys_text = prompt._messages[0]["content"].lower()
+        assert "completeness" in sys_text
+        assert "hallucination" in sys_text
+        assert "attribution" in sys_text
