@@ -1,0 +1,115 @@
+{
+  "artifact_id": "CS-06_Testing_Strategy_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/run_2_pipeline_CS-06_Testing_Strategy_compiled_20260507T084054Z",
+  "total_kips": 11,
+  "recall": 0.9091,
+  "counts": {
+    "YES": 9,
+    "PARTIAL": 2,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.048708,
+  "eval_latency_seconds": 25.79,
+  "eval_tokens": 13268,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "A shell-script-based smoke test was the initial approach to integration testing",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `deployment/smoke-test.sh` being created as the initial approach, and the \"Semi Auto Integration testing\" commit aligns with a shell-script-based smoke test being the first integration testing method before the xUnit-style test project was introduced.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "The shell-script smoke test approach was abandoned after repeated debugging revealed it was unreliable",
+      "category": "RAT",
+      "implicit": true,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry documents that the smoke-test script was created, repeatedly revised across multiple bugfix commits, and then removed, which implies unreliability, but it does not explicitly state that the shell-script smoke test approach was \"abandoned after repeated debugging revealed it was unreliable.\"",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "E2E tests were removed from the project",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"automated E2E testing was removed\" in the summary and includes a dedicated decision entry about removing automated E2E tests, supported by commit 27bbf4f with the message \"Remove E2E Testing.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Manual E2E testing steps were documented in the README as a fallback after automated E2E removal",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Manual E2E steps documented in README instead\" in the Decisions section, and the commit log entry for 27bbf4f reads \"Remove E2E Testing. Update Readme with manual E2E steps,\" clearly capturing this fact.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "A dedicated C# integration test project was created and added to the solution as the replacement testing strategy",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that a new dedicated C# integration test project (`LKVLogistic.Cli.IntegrationTests`) was created and added to the solution (`LkvLogistik.sln` updated to include the new test project) as part of the replacement testing strategy.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "A BillbeeMockFixture was created for mocking external API interactions in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `Fixtures/BillbeeMockFixture.cs` as one of the key files introduced in the new integration test project, clearly indicating a BillbeeMockFixture was created for mocking external API interactions in tests.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "An SftpGoFixture was created for simulating SFTP file transfer operations in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `Fixtures/SftpGoFixture.cs` as one of the files introduced in the new integration test project, clearly indicating an SftpGoFixture was created for simulating SFTP file transfer operations in tests.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Integration tests were created covering the SFTP client functionality",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly mentions `SftpClientTests.cs` as a file in the new integration test project and references `SftpGoFixture.cs`, clearly indicating that integration tests covering SFTP client functionality were created.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Integration tests were created for all four core sync operations: Orders, OrderFeedback, Products, and Stocks",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists all four integration test files—`SyncOrderFeedbackIntegrationTests.cs`, `SyncOrdersIntegrationTests.cs`, `SyncProductsIntegrationTests.cs`, and `SyncStocksIntegrationTests.cs`—confirming that integration tests were created for all four core sync operations.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "A CsvTestData helper class was created for generating structured test data",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry mentions `TestData/CsvTestData.cs` as a file in the new test project, but does not explicitly describe it as a \"helper class for generating structured test data.\"",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-011",
+      "kip_text": "Integration test warnings and code quality issues were cleaned up in a follow-up pass",
+      "category": "IMP",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists commits \"Fix Warnings in Integration tests\" (ce26c70) and \"Further integration test cleanup\" (79a4931) on 2026-03-23, directly capturing the follow-up pass to clean up warnings and code quality issues.",
+      "score": 1.0
+    }
+  ]
+}

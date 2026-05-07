@@ -1,0 +1,21 @@
+{
+  "architecture": "pipeline",
+  "prompt_id": "pipeline_generate_wiki",
+  "prompt_version": 2,
+  "audience": "development",
+  "model": "claude-sonnet-4-6",
+  "artifact_id": "CS-02_Automatic_Screenshot_report",
+  "artifact_type": "support_report",
+  "artifact_files": [
+    "CS-02_Automatic_Screenshot_report.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 4096,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T08:59:43+00:00",
+  "num_calls": 1,
+  "total_latency_seconds": 7.25,
+  "total_cost_usd": 0.010266,
+  "total_tokens": 1890
+}

@@ -1,0 +1,21 @@
+{
+  "architecture": "pipeline",
+  "prompt_id": "pipeline_generate_wiki",
+  "prompt_version": 2,
+  "audience": "development",
+  "model": "claude-sonnet-4-6",
+  "artifact_id": "CS-05_Error_Handling_and_Monitoring_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-05_Error_Handling_and_Monitoring_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 4096,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T08:47:06+00:00",
+  "num_calls": 1,
+  "total_latency_seconds": 20.52,
+  "total_cost_usd": 0.026046,
+  "total_tokens": 4202
+}
