@@ -27,6 +27,7 @@ _RESULTS_DIR = _PROJECT_ROOT / "eval" / "results"
 def run_pipeline(
     *artifact_filenames: str,
     prompt_id: str = "pipeline_generate_wiki",
+    audience: str = "development",
     temperature: float | None = None,
     max_tokens: int | None = None,
     top_p: float | None = None,
@@ -42,6 +43,10 @@ def run_pipeline(
     Args:
         artifact_filenames: Filenames in data/anonymized/.
         prompt_id: Prompt template to use.
+        audience: Audience name to render the prompt for. Must match one
+                  of the audiences declared in the prompt YAML's
+                  ``meta.audiences`` block (CL-01, thesis §4.2.3).
+                  Defaults to ``development`` (Run-1 schema analog).
         temperature: Override sampling temperature.
         max_tokens: Override max response tokens.
         top_p: Override nucleus sampling threshold.
@@ -65,11 +70,24 @@ def run_pipeline(
     if eff_top_k is not None:
         eff_top_k = int(eff_top_k)
 
-    messages = prompt.render(
-        artifact_type=bundle.artifact_type,
-        artifact_id=bundle.artifact_id,
-        artifact_text=bundle.artifact_text,
-    )
+    # Audience is forwarded to render() only when the prompt declares
+    # an `audiences:` block; this keeps backward compatibility with any
+    # generation prompt that pre-dates CL-01 while still erroring loudly
+    # if a user requests an audience the prompt does not define.
+    render_kwargs: dict[str, str] = {
+        "artifact_type": bundle.artifact_type,
+        "artifact_id": bundle.artifact_id,
+        "artifact_text": bundle.artifact_text,
+    }
+    if prompt.audiences:
+        render_kwargs["audience"] = audience  # render() validates membership
+    elif audience != "development":
+        raise ValueError(
+            f"Prompt {prompt_id!r} does not declare audiences; "
+            f"cannot run with audience={audience!r}."
+        )
+
+    messages = prompt.render(**render_kwargs)
 
     # ── 2. Call LLM ──────────────────────────────────────────────────
     print(f"Generating wiki entry for {bundle.artifact_id}...", flush=True)
@@ -104,6 +122,7 @@ def run_pipeline(
         "architecture": "pipeline",
         "prompt_id": prompt_id,
         "prompt_version": prompt.version,
+        "audience": audience if prompt.audiences else None,
         "model": result.model,
         "artifact_id": bundle.artifact_id,
         "artifact_type": bundle.artifact_type,

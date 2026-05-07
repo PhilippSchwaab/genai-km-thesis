@@ -24,6 +24,20 @@ class Architecture(str, Enum):
     agentic = "agentic"
 
 
+class Audience(str, Enum):
+    """Audiences declared by the generation prompts (CL-01, thesis §4.2.3).
+
+    Adding a new audience is a YAML edit (under `meta.audiences` in the
+    prompt files) plus a one-line addition here. The runner does not
+    hard-code any audience-specific behaviour; this enum simply mirrors
+    the YAML for typer-driven CLI validation and shell completion.
+    """
+
+    marketing = "marketing"
+    development = "development"
+    architect = "architect"
+
+
 def _complete_artifacts(incomplete: str) -> list[str]:
     """Return matching filenames from data/anonymized/ for shell autocompletion."""
     anon_dir = Path(__file__).resolve().parents[1] / "data" / "anonymized"
@@ -39,6 +53,7 @@ def _complete_artifacts(incomplete: str) -> list[str]:
 def generate(
     arch: Architecture = typer.Option(..., help="Architecture to use."),
     artifacts: list[str] = typer.Argument(..., help="Filenames in data/anonymized/.", autocompletion=_complete_artifacts),
+    audience: Audience = typer.Option(Audience.development, help="Output audience (CL-01)."),
     prompt: Optional[str] = typer.Option(None, help="Prompt template id (overrides default for the architecture)."),
     temperature: Optional[float] = typer.Option(None, help="Override sampling temperature."),
     max_tokens: Optional[int] = typer.Option(None, help="Override max response tokens."),
@@ -50,6 +65,8 @@ def generate(
 
     Sampling parameters (temperature, max_tokens, top_p, top_k) default to
     the values in the prompt YAML. CLI flags override them when provided.
+    The --audience flag selects the per-audience section schema declared
+    in the prompt YAML (CL-01, thesis §4.2.3).
     """
     # Build kwargs — only include sampling overrides that were explicitly set
     sampling_overrides: dict = {}
@@ -68,6 +85,7 @@ def generate(
         run_dir = run_pipeline(
             *artifacts,
             prompt_id=prompt or "pipeline_generate_wiki",
+            audience=audience.value,
             run_tag=tag or None,
             **sampling_overrides,
         )
@@ -78,6 +96,7 @@ def generate(
         run_dir = run_agentic(
             *artifacts,
             prompt_id=prompt or "agentic_generate_wiki",
+            audience=audience.value,
             run_tag=tag or None,
             **sampling_overrides,
         )

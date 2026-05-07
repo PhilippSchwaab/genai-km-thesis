@@ -234,3 +234,31 @@ class TestConcisionDirective:
         assert "completeness" in sys_text
         assert "hallucination" in sys_text
         assert "attribution" in sys_text
+
+
+# ── CL-01: audience parameter persisted in metadata ────────────────────
+
+
+class TestAudiencePersistence:
+    """Verify the runner forwards the audience to render() and persists
+    it in metadata.json, so every run is replayable from its metadata."""
+
+    def test_default_audience_is_development(self, mock_agent, results_dir):
+        run_dir = run_agentic("CS-06_Testing_Strategy_compiled.md")
+        meta = json.loads((run_dir / "metadata.json").read_text())
+        assert meta["audience"] == "development"
+
+    def test_explicit_audience_recorded(self, mock_agent, results_dir):
+        run_dir = run_agentic(
+            "CS-06_Testing_Strategy_compiled.md",
+            audience="marketing",
+        )
+        meta = json.loads((run_dir / "metadata.json").read_text())
+        assert meta["audience"] == "marketing"
+
+    def test_unknown_audience_raises(self, mock_agent, results_dir):
+        with pytest.raises(KeyError):
+            run_agentic(
+                "CS-06_Testing_Strategy_compiled.md",
+                audience="finance",
+            )

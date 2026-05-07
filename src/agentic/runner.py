@@ -135,6 +135,7 @@ def _create_agent(
 def run_agentic(
     *artifact_filenames: str,
     prompt_id: str = "agentic_generate_wiki",
+    audience: str = "development",
     temperature: float | None = None,
     max_tokens: int | None = None,
     top_p: float | None = None,
@@ -149,6 +150,10 @@ def run_agentic(
     Args:
         artifact_filenames: Filenames in data/anonymized/.
         prompt_id: Prompt template to use.
+        audience: Audience name to render the prompt for. Must match one
+                  of the audiences declared in the prompt YAML's
+                  ``meta.audiences`` block (CL-01, thesis §4.2.3).
+                  Defaults to ``development`` (Run-1 schema analog).
         temperature: Override sampling temperature.
         max_tokens: Override max response tokens.
         top_p: Override nucleus sampling threshold.
@@ -176,12 +181,23 @@ def run_agentic(
     global _SOURCE_TEXT
     _SOURCE_TEXT = bundle.artifact_text
 
-    # Build the user message from the prompt template
-    rendered = prompt.render(
-        artifact_type=bundle.artifact_type,
-        artifact_id=bundle.artifact_id,
-        artifact_text=bundle.artifact_text,
-    )
+    # Audience is forwarded to render() only when the prompt declares
+    # an `audiences:` block; mirrors the pipeline runner contract so
+    # both architectures resolve audience the same way.
+    render_kwargs: dict[str, str] = {
+        "artifact_type": bundle.artifact_type,
+        "artifact_id": bundle.artifact_id,
+        "artifact_text": bundle.artifact_text,
+    }
+    if prompt.audiences:
+        render_kwargs["audience"] = audience  # render() validates membership
+    elif audience != "development":
+        raise ValueError(
+            f"Prompt {prompt_id!r} does not declare audiences; "
+            f"cannot run with audience={audience!r}."
+        )
+
+    rendered = prompt.render(**render_kwargs)
 
     # Extract system prompt and user message from the rendered messages
     system_prompt = ""
@@ -237,6 +253,7 @@ def run_agentic(
         "architecture": "agentic",
         "prompt_id": prompt_id,
         "prompt_version": prompt.version,
+        "audience": audience if prompt.audiences else None,
         "model": model_id,
         "artifact_id": bundle.artifact_id,
         "artifact_type": bundle.artifact_type,

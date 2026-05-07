@@ -1,9 +1,15 @@
 # Architecture A — Structured Pipeline: Wiki Entry Generation
 # Converts an anonymized business artifact into a structured wiki entry.
 #
-# v2 (CL-03, thesis §4.2.3): user turn reordered so the source artifact
-# precedes the task instruction. This makes the source the stable prefix
-# and the instruction the dynamic suffix, enabling cache breakpoints (CL-05).
+# v2 (thesis §4.2.3):
+#   - CL-03: user turn reordered so the source artifact precedes the task
+#     instruction. This makes the source the stable prefix and the
+#     instruction the dynamic suffix, enabling cache breakpoints (CL-05).
+#   - CL-01: audience parameter and per-audience section schema. The
+#     {audience} and {audience_schema} placeholders are substituted at
+#     render time from `meta.audiences.<name>`. Audience defaults to
+#     `development` (matches the Run-1 schema closest); `marketing` and
+#     `architect` are the additional audiences for the Run-2 showcase.
 
 meta:
   id: pipeline_generate_wiki
@@ -15,7 +21,34 @@ meta:
     max_tokens: 4096
   description: >
     Single-pass generation prompt for Architecture A.
-    Takes an anonymized artifact and produces a structured wiki entry.
+    Takes an anonymized artifact and produces a structured wiki entry
+    tailored for the requested audience.
+
+  # Per-audience section schemas. Adding a new audience is a YAML edit;
+  # no code changes required.
+  audiences:
+    development:
+      schema: |
+        ## Summary
+        ## Decisions
+        ## Action items (with owner and due date where stated)
+        ## Blockers and open questions
+        ## Implementation detail (commits, files, line counts where present)
+        ## Sources
+    marketing:
+      schema: |
+        ## Outcome (one paragraph: what was achieved, in plain language)
+        ## Stakeholders involved (anonymized identifiers)
+        ## Business impact (only if explicitly stated in the source)
+        ## Status and next milestone
+        ## Sources
+    architect:
+      schema: |
+        ## Summary
+        ## Decisions (each paired with its driver and at least one alternative considered)
+        ## Trade-offs and constraints
+        ## Open questions and risks
+        ## Sources
 
 messages:
   - role: system
@@ -39,4 +72,8 @@ messages:
       {artifact_text}
       ---
 
-      Convert the source artifact above into a structured wiki entry.
+      Convert the source artifact above into a structured wiki entry
+      tailored for the {audience} audience. Use the following section
+      structure exactly:
+
+      {audience_schema}

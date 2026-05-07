@@ -53,7 +53,15 @@ _TYPE_HINTS: dict[str, str] = {
 
 @dataclass(frozen=True)
 class Prompt:
-    """A loaded prompt template with metadata."""
+    """A loaded prompt template with metadata.
+
+    Prompts may declare per-audience scaffolding under ``meta.audiences``.
+    Each audience entry is a dict with at least a ``schema`` key whose
+    value is the section structure spliced into the rendered user turn.
+    Prompts without an ``audiences`` block render unchanged from earlier
+    versions; the audience parameter is opt-in and orthogonal to all
+    other rendering inputs.
+    """
 
     id: str
     architecture: str
@@ -61,10 +69,39 @@ class Prompt:
     model: str
     description: str
     sampling: dict[str, float]
+    audiences: dict[str, dict[str, str]]   # name -> {"schema": "..."}
     _messages: list[dict[str, str]]
 
-    def render(self, **kwargs: str) -> list[dict[str, str]]:
-        """Fill template variables and return litellm-ready messages."""
+    def render(
+        self,
+        *,
+        audience: str | None = None,
+        **kwargs: str,
+    ) -> list[dict[str, str]]:
+        """Fill template variables and return litellm-ready messages.
+
+        If ``audience`` is provided, the audience's ``schema`` is
+        substituted into the ``{audience_schema}`` placeholder and the
+        audience name into the ``{audience}`` placeholder. Raises:
+
+        - ``ValueError`` if the prompt has no ``audiences`` block.
+        - ``KeyError`` if the audience name is not declared.
+        """
+        if audience is not None:
+            if not self.audiences:
+                raise ValueError(
+                    f"Prompt {self.id!r} does not declare audiences; "
+                    f"cannot render with audience={audience!r}."
+                )
+            if audience not in self.audiences:
+                raise KeyError(
+                    f"Unknown audience {audience!r} for prompt "
+                    f"{self.id!r}; declared audiences: "
+                    f"{sorted(self.audiences)}."
+                )
+            kwargs["audience"] = audience
+            kwargs["audience_schema"] = self.audiences[audience]["schema"]
+
         return [
             {"role": m["role"], "content": m["content"].format(**kwargs)}
             for m in self._messages
@@ -78,6 +115,11 @@ class Prompt:
             vars_found.update(re.findall(r"\{(\w+)}", m["content"]))
         return vars_found
 
+    @property
+    def audience_names(self) -> list[str]:
+        """Sorted list of declared audience names (empty if none)."""
+        return sorted(self.audiences)
+
 
 def load_prompt(prompt_id: str) -> Prompt:
     """Load a prompt by its id (filename without extension)."""
@@ -89,6 +131,15 @@ def load_prompt(prompt_id: str) -> Prompt:
         data = yaml.safe_load(f)
 
     meta = data["meta"]
+    audiences = meta.get("audiences", {}) or {}
+    # Validate each audience entry has the expected shape so misconfigured
+    # YAMLs fail at load time rather than at render time.
+    for name, body in audiences.items():
+        if not isinstance(body, dict) or "schema" not in body:
+            raise ValueError(
+                f"Prompt {prompt_id!r} audience {name!r} must be a "
+                f"mapping with a 'schema' key (got {type(body).__name__})."
+            )
     return Prompt(
         id=meta["id"],
         architecture=meta["architecture"],
@@ -96,6 +147,7 @@ def load_prompt(prompt_id: str) -> Prompt:
         model=meta["model"],
         description=meta["description"],
         sampling=meta.get("sampling", {}),
+        audiences=audiences,
         _messages=data["messages"],
     )
 

@@ -9,6 +9,11 @@
 #     responses are capped at 150 words and required to be bullet-list
 #     only with the literal output `NONE` when no issues are found. The
 #     final wiki entry is intentionally unconstrained.
+#   - CL-01: audience parameter and per-audience section schema. The
+#     {audience} and {audience_schema} placeholders are substituted at
+#     render time from `meta.audiences.<name>`. Audience defaults to
+#     `development` (matches the Run-1 schema closest); `marketing` and
+#     `architect` are the additional audiences for the Run-2 showcase.
 
 meta:
   id: agentic_generate_wiki
@@ -20,8 +25,37 @@ meta:
     max_tokens: 16384
   description: >
     System prompt for the agentic workflow. The agent iterates over the
-    artifact, extracts facts, drafts a wiki entry, then self-reviews for
-    completeness and hallucinations before producing the final output.
+    artifact, extracts facts, drafts a wiki entry tailored for the
+    requested audience, then self-reviews for completeness and
+    hallucinations before producing the final output.
+
+  # Per-audience section schemas. Adding a new audience is a YAML edit;
+  # no code changes required. Schemas are intentionally identical to the
+  # pipeline prompt's so the architecture comparison sees the same target
+  # output structure.
+  audiences:
+    development:
+      schema: |
+        ## Summary
+        ## Decisions
+        ## Action items (with owner and due date where stated)
+        ## Blockers and open questions
+        ## Implementation detail (commits, files, line counts where present)
+        ## Sources
+    marketing:
+      schema: |
+        ## Outcome (one paragraph: what was achieved, in plain language)
+        ## Stakeholders involved (anonymized identifiers)
+        ## Business impact (only if explicitly stated in the source)
+        ## Status and next milestone
+        ## Sources
+    architect:
+      schema: |
+        ## Summary
+        ## Decisions (each paired with its driver and at least one alternative considered)
+        ## Trade-offs and constraints
+        ## Open questions and risks
+        ## Sources
 
 messages:
   - role: system
@@ -60,4 +94,8 @@ messages:
       {artifact_text}
       ---
 
-      Convert the source artifact above into a structured wiki entry.
+      Convert the source artifact above into a structured wiki entry
+      tailored for the {audience} audience. Use the following section
+      structure exactly:
+
+      {audience_schema}

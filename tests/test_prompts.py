@@ -47,6 +47,7 @@ class TestPromptRender:
     def test_render_fills_variables(self):
         prompt = load_prompt("pipeline_generate_wiki")
         messages = prompt.render(
+            audience="development",
             artifact_type="meeting_transcript",
             artifact_id="test-meeting",
             artifact_text="Some meeting text here.",
@@ -75,13 +76,98 @@ class TestPromptMessagesFormat:
     @pytest.mark.parametrize("prompt_id", [p["id"] for p in list_prompts()])
     def test_messages_have_role_and_content(self, prompt_id):
         prompt = load_prompt(prompt_id)
-        # Render with dummy values for all template vars
+        # Render with dummy values for all template vars; audience-aware
+        # prompts need the audience kwarg as well, since the {audience}
+        # and {audience_schema} placeholders are filled by render() not
+        # by the **kwargs path.
         kwargs = {var: f"test_{var}" for var in prompt.template_vars}
-        messages = prompt.render(**kwargs)
+        kwargs.pop("audience", None)
+        kwargs.pop("audience_schema", None)
+        if prompt.audiences:
+            messages = prompt.render(audience=prompt.audience_names[0], **kwargs)
+        else:
+            messages = prompt.render(**kwargs)
         for msg in messages:
             assert "role" in msg, f"Missing 'role' in {prompt_id}"
             assert "content" in msg, f"Missing 'content' in {prompt_id}"
             assert msg["role"] in ("system", "user", "assistant")
+
+
+# ── CL-01: audience parameter ───────────────────────────────────────────
+
+
+class TestAudiences:
+    """The CL-01 audience parameter: a configurable section schema
+    selected per render() call, declared declaratively in the prompt
+    YAML's `meta.audiences` block. Tests cover the loader contract,
+    the render() routing, and backward compatibility for prompts that
+    do not declare an `audiences` block."""
+
+    def test_generation_prompts_declare_three_audiences(self):
+        for prompt_id in ("pipeline_generate_wiki", "agentic_generate_wiki"):
+            prompt = load_prompt(prompt_id)
+            assert set(prompt.audiences) == {
+                "marketing", "development", "architect"
+            }, f"{prompt_id} audience set mismatch"
+
+    def test_each_audience_has_schema(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        for name, body in prompt.audiences.items():
+            assert "schema" in body, f"{name} missing schema"
+            assert body["schema"].strip(), f"{name} schema is empty"
+
+    def test_audience_names_property_sorted(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        assert prompt.audience_names == sorted(prompt.audiences)
+
+    def test_render_substitutes_selected_schema(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        marketing = prompt.render(
+            audience="marketing",
+            artifact_type="meeting_transcript",
+            artifact_id="x",
+            artifact_text="…",
+        )
+        development = prompt.render(
+            audience="development",
+            artifact_type="meeting_transcript",
+            artifact_id="x",
+            artifact_text="…",
+        )
+        marketing_user = marketing[-1]["content"]
+        development_user = development[-1]["content"]
+        # Audience name appears in the rendered user turn.
+        assert "marketing" in marketing_user
+        assert "development" in development_user
+        # Schemas differ between audiences.
+        assert marketing_user != development_user
+        # Marketing schema-specific markers come through; development ones don't.
+        assert "Outcome" in marketing_user
+        assert "Outcome" not in development_user
+
+    def test_render_unknown_audience_raises(self):
+        prompt = load_prompt("pipeline_generate_wiki")
+        with pytest.raises(KeyError):
+            prompt.render(
+                audience="finance",
+                artifact_type="meeting_transcript",
+                artifact_id="x",
+                artifact_text="…",
+            )
+
+    def test_render_audience_against_prompt_without_audiences_raises(self):
+        # Eval prompts intentionally do not declare audiences; passing one
+        # to render() must error rather than silently substituting nothing.
+        prompt = load_prompt("eval_kip_scorer")
+        assert prompt.audiences == {}
+        with pytest.raises(ValueError):
+            prompt.render(audience="marketing", kip_text="…", wiki_entry="…")
+
+    def test_render_without_audience_works_for_audience_less_prompt(self):
+        prompt = load_prompt("eval_kip_scorer")
+        kwargs = {var: f"test_{var}" for var in prompt.template_vars}
+        messages = prompt.render(**kwargs)
+        assert len(messages) >= 1
 
 
 class TestGuessArtifactType:
