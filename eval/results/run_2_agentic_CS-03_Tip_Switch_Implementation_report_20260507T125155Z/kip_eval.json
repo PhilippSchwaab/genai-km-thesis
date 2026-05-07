@@ -1,0 +1,106 @@
+{
+  "artifact_id": "CS-03_Tip_Switch_Implementation_report",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/run_2_agentic_CS-03_Tip_Switch_Implementation_report_20260507T125155Z",
+  "total_kips": 10,
+  "recall": 0.95,
+  "counts": {
+    "YES": 9,
+    "PARTIAL": 1,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.063738,
+  "eval_latency_seconds": 26.28,
+  "eval_tokens": 18330,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "Two new PLC variables were added: a boolean for tip switch status (tipptaster_linie) and a REAL for machine speed selection (db_allgemein.r32._10)",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists both new PLC variables: `fkt.tipptaster_linie` (Bool) for tip switch status and `db_allgemein.r32._10` (REAL) for machine speed selection, in the variables table under \"Variables added (per project).\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "The tip switch status variable is located at Data Block 1804, Offset 2, Bit 3, using S7TCP32 driver with Bool data type",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry's variable table explicitly lists Data Block 1804, Offset 2, Bit 3, driver S7TCP32, and Bool data type for the tip switch status variable `fkt.tipptaster_linie`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "The machine speed variable is located at Data Block 1804, Offset 160, with setpoint limits of 10 to 200 pcs/min",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states in the variables table that `r32._10` is located at Data Block 1804, Offset 160, and specifies setpoint limits of 10–200 pcs/min both in the table and in the Decisions section.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "When the tip switch is active, the machine must not be switched to automatic mode",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"When a tip switch is physically connected to a line, the machine must be prevented from entering automatic mode\" in the Summary, and this is further reinforced by the interlock implementation details and the variable description \"Tip switch active → automatic mode disabled.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "A LockMachineAutoMode interlocking function was created combining the machine running state and tip switch status with OR logic",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes the `LockMachineAutoMode` interlock combining `db_anl_ges.eing` (machine running state) and `fkt.tipptaster_linie` (tip switch status) using OR logic: `(X01.Wert = 1) OR (X02.Wert = 1)`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "Language entries were added in German, English, and Italian for both the machine speed label and the interlocking warning message",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Language strings added in three languages (German, English, Italian) for both the speed label and the interlock message\" and provides the full string values in all three languages for both `<Maschinengeschwindigkeit>` (machine speed label) and `<Verriegelung>` (interlocking warning message).",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "The Auto mode buttons in the Start and Pop_Favorites screens were modified to use the LockMachineAutoMode interlocking with a warning text",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that both the `Start` and `Pop_Favorites` screens had their Auto mode buttons modified with the `LockMachineAutoMode` interlock and the warning text `@<Verriegelung>`.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Machine speed input fields were added to the appropriate machine master data screens with display authorization level 33 and Machine parametrization permission",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states that the new input field was added to machine master data screens with \"authorization level 33\" and also notes that \"Display authorization level for the new speed input field set to **33** ('Machine parametrization')\" in the Decisions section.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "The implementation is identical across all projects covering 12 machine numbers in lines L6, L7, and L8",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry states the implementation is identical across all affected Zenon client projects and lists the 12 machine numbers across L6, L7, and L8, but does not explicitly state that the implementation is identical \"across all projects covering 12 machine numbers\" as a single combined statement.",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "When the tip switch is active, the operator can pre-select a machine speed within the configured setpoint limits",
+      "category": "TEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"the operator can pre-select a machine speed while tip-switch mode is active\" in the Summary, and further details the speed setpoint range of 10–200 pcs/min sourced from the variable's own setpoint limits in the Implementation detail section.",
+      "score": 1.0
+    }
+  ]
+}

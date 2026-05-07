@@ -1,0 +1,182 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-05_Error_Handling_and_Monitoring_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-05_Error_Handling_and_Monitoring_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:46:18+00:00",
+  "num_calls": 2,
+  "writer_calls": 1,
+  "reviewer_iterations": 1,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 21.16,
+  "total_cost_usd": 0.040532,
+  "total_tokens": 7764,
+  "prompt_tokens": 6669,
+  "completion_tokens": 1095,
+  "cache_read_input_tokens": 0,
+  "cache_creation_input_tokens": 5467,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 6669,
+      "outputTokens": 1095,
+      "totalTokens": 7764,
+      "cacheReadInputTokens": 0,
+      "cacheWriteInputTokens": 5467
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 1,
+        "total_duration": 19.751265048980713,
+        "average_cycle_time": 19.751265048980713,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "51586558-6c04-4927-b258-9b44da05a412",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778157978.4139159,
+            "end_time": 1778157998.165181,
+            "duration": 19.751265048980713,
+            "children": [
+              {
+                "id": "fe1f14a1-7eed-4630-b4f4-700b2cdbd9d9",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "51586558-6c04-4927-b258-9b44da05a412",
+                "start_time": 1778157978.413988,
+                "end_time": 1778157998.165121,
+                "duration": 19.75113296508789,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nSprint period 2026-03-06 to 2026-03-11. Two active work items addressed error handling and monitoring for the logistics CLI: AB#3603 hardened `SyncOrderFeedback` to log errors rather than fail, and AB#3626 introduced an email notification service to alert on detected errors via SMTP. All work authored by [Developer 1] across 7 commits and 1 merged PR.\n\n## Decisions\n- Change `SyncOrderFeedback` behavior to log errors instead of failing hard. Driver: resilience improvement (AB#3603).\n- Ignore bad data on missing field and `ReadingExceptionErrors` rather than propagating exceptions. Driver: fault tolerance for malformed CSV input (AB#3603).\n- Deliver error notifications via SMTP with STARTTLS. Driver: secure email transport (AB#3626).\n- Wrap all sync commands in a top-level try/catch block to ensure errors are captured and dispatched via SMTP (AB#3626).\n\n## Action items (with owner and due date where stated)\n- AB#3603 (Fix SyncOrderFeedback) \u2014 [Developer 1] \u2014 state: Active, no due date recorded.\n- AB#3626 (Add Email Feedback) \u2014 [Developer 1] \u2014 state: Active, no due date recorded.\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n\n**PR #353** \u2014 AB#3626: Add Try Catch Block to catch all errors and send them via SMTP\n- Author: [Developer 1] | Created & completed: 2026-03-11 | Merge strategy: rebase\n\n**Commit log:**\n\n| Hash | Date | Message | Files changed | Net change |\n|------|------|---------|---------------|------------|\n| 87bd6ea | 2026-03-06 | AB#3603: Change SyncOrderFeedback behavior to Log Errors instead of failing | 4 | +68 / \u221239 |\n| 59f5cde | 2026-03-09 | AB#3603: Fix Ignore bad data on fix missing field found | 2 | +8 |\n| 532426c | 2026-03-09 | AB#3603: Fix Ignore ReadingExceptionErrors | 2 | +10 |\n| b3416f6 | 2026-03-10 | AB#3626: Add Email Notification if error is detected | 9 | +81 / \u22124 |\n| 7f2d7e6 | 2026-03-10 | AB#3626: Add Missing Email Notification Files | 3 | +132 |\n| d98d346 | 2026-03-10 | AB#3626: Fix To use STARTTLS | 1 | +5 / \u22121 |\n| e8bc570 | 2026-03-11 | AB#3626: Add Try Catch Block to catch all errors and send them via SMTP | 4 | +116 / \u221286 |\n\n**Notable files introduced or significantly modified:**\n- `SyncOrderFeedbackCommand.cs` \u2014 error-logging refactor and try/catch wrapper (87bd6ea, e8bc570)\n- `CSVBestandsmeldung.cs` / `CsvAuftragsRueckmeldung.cs` \u2014 bad-data and exception ignoring (87bd6ea, 59f5cde, 532426c)\n- `EmailNotificationService.cs` \u2014 new SMTP notification service, 112 lines added (7f2d7e6)\n- `SmtpConfiguration.cs` / `IEmailNotificationService.cs` \u2014 supporting configuration and interface (7f2d7e6)\n- `credentials-secret.yaml.example` (production & staging overlays) \u2014 SMTP credential scaffolding (b3416f6)\n- `SyncOrdersCommand.cs`, `SyncProductsCommand.cs`, `SyncStocksCommand.cs` \u2014 email notification hooks and try/catch wrappers (b3416f6, e8bc570)\n- `appsettings.json` \u2014 SMTP settings added (b3416f6)\n\n**Totals across all commits:** 25 files changed, 420 insertions(+), 130 deletions(\u2212)\n\n## Sources\n- Artifact CS-05_Error_Handling_and_Monitoring_compiled (development_activity), 2026-03-06 to 2026-03-11. Work items AB#3603, AB#3626."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 3256,
+          "outputTokens": 1090,
+          "totalTokens": 4346,
+          "cacheWriteInputTokens": 3182
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3256,
+              "outputTokens": 1090,
+              "totalTokens": 4346,
+              "cacheWriteInputTokens": 3182
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "7a44bf2f-fe74-4739-bdba-5da0b110b0d4",
+                "usage": {
+                  "inputTokens": 3256,
+                  "outputTokens": 1090,
+                  "totalTokens": 4346,
+                  "cacheWriteInputTokens": 3182
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 1,
+        "total_duration": 1.4093539714813232,
+        "average_cycle_time": 1.4093539714813232,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "da2bfdce-2ce5-4998-b1cd-4d279d5d3f4b",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778157998.167167,
+            "end_time": 1778157999.576521,
+            "duration": 1.4093539714813232,
+            "children": [
+              {
+                "id": "62ab4c1f-def4-4b2e-ac54-4255c8614c0f",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "da2bfdce-2ce5-4998-b1cd-4d279d5d3f4b",
+                "start_time": 1778157998.167288,
+                "end_time": 1778157999.5764768,
+                "duration": 1.4091887474060059,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 3413,
+          "outputTokens": 5,
+          "totalTokens": 3418,
+          "cacheWriteInputTokens": 2285
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3413,
+              "outputTokens": 5,
+              "totalTokens": 3418,
+              "cacheWriteInputTokens": 2285
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "f3592188-cb90-4d6f-911b-19df39b1bae7",
+                "usage": {
+                  "inputTokens": 3413,
+                  "outputTokens": 5,
+                  "totalTokens": 3418,
+                  "cacheWriteInputTokens": 2285
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

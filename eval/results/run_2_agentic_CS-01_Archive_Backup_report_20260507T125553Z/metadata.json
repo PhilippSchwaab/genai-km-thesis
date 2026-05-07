@@ -1,0 +1,290 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-01_Archive_Backup_report",
+  "artifact_type": "support_report",
+  "artifact_files": [
+    "CS-01_Archive_Backup_report.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:55:11+00:00",
+  "num_calls": 4,
+  "writer_calls": 2,
+  "reviewer_iterations": 2,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 42.64,
+  "total_cost_usd": 0.098721,
+  "total_tokens": 23007,
+  "prompt_tokens": 19700,
+  "completion_tokens": 3307,
+  "cache_read_input_tokens": 6419,
+  "cache_creation_input_tokens": 9797,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 19700,
+      "outputTokens": 3307,
+      "totalTokens": 23007,
+      "cacheReadInputTokens": 6419,
+      "cacheWriteInputTokens": 9797
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 2,
+        "total_duration": 32.82411193847656,
+        "average_cycle_time": 16.41205596923828,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "e94925b9-e285-4857-9862-e89c99fd8651",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158511.020654,
+            "end_time": 1778158532.874666,
+            "duration": 21.85401201248169,
+            "children": [
+              {
+                "id": "762ef9e5-8d6f-4538-a103-5d8e0530474b",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "e94925b9-e285-4857-9862-e89c99fd8651",
+                "start_time": 1778158511.020743,
+                "end_time": 1778158532.874607,
+                "duration": 21.853864192962646,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nThe `BatchBackup` plant model extends the Groninger\u2013Schott Archive SCADA system (Zenon Runtime) with an automatic backup routine that activates whenever the Zenon Runtime terminates uncontrolled during an active batch production run. On the next Runtime start the system detects the crash, copies the most recently exported archive files back into the active archives, notifies the operator via a popup, and resumes the batch process without data loss. During normal batch production, archives S1 and E1 are copied to the `ExportArx` folder every 5 minutes as a rolling safety net. Parametrisation and testing were carried out on virtual machine `VM 13462_Scada`.\n\n## Decisions\n- **Backup trigger logic via three variables** (`B1_Batch.Start`, `nboBatchRuntimeStart`, `nboBatchBackupStart`): the backup procedure starts only when both `nboBatchRuntimeStart` (set by the Autostart script) and the remanent variable `B1_Batch.Start` are `True` simultaneously, indicating an uncontrolled shutdown during batch production. On a normal Runtime start `B1_Batch.Start` is `False` and the backup is skipped.\n- **Rolling 5-minute archive export** during batch production: archives S1 and E1 (`*.ARS` / `*.ARX`) are copied to the Runtime export folder `ExportArx` on a 5-minute timer (`Tfu_BatchBackupExportArchives`) via script `SE_BatchBackupExportArchives`, ensuring at most 5 minutes of data can be lost.\n- **Import order constraint**: the `BatchBackup` plant model must be imported into all sub-projects before the SCADA project, because script `SaveRemanentDataAllProject` calls functions residing in the sub-projects.\n- **Red batch-name highlight on restart is expected behaviour**: the batch name is shown with a red background at Runtime start because uniqueness is re-validated against a name already assigned at batch start; this is documented as normal and acceptable.\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n**Key scripts and their execution sequence:**\n\n| Script | Triggered by | Actions (in order) |\n|---|---|---|\n| `SE_StartBatchBackup` | `nboBatchBackupStart` math variable | 1. Stop archives E1 and S1 \u00b7 2. Show popup `Pop_BatchBackup` \u00b7 3. Reset `nboBatchRuntimeStart` \u00b7 4. Restart archives E1 and S1 \u00b7 5. (SCADA project only) Start all S1 and E1 archives from sub-projects |\n| `SE_BatchBackupExportArchives` | Timer `Tfu_BatchBackupExportArchives` (5 min) | 1. Copy `E1.ARS` + `E1.ARX` from Runtime data folder \u2192 `ExportArx` \u00b7 2. Copy `S1.ARS` + `S1.ARX` from Runtime data folder \u2192 `ExportArx` |\n\n**Manual XML import sequence (17 components, in required order):**\n1. Template \u2192 `Fra_F_PopupBatchBackup`\n2. Screen \u2192 `Scr_Pop_BatchBackup`\n3. Function \u2192 `SS_Pop_BatchBackup`\n4. Variable \u2192 `nboBatchRuntimeStart`\n5. Function \u2192 `nboBatchRuntimeStart \u2013 0`\n6. Function \u2192 `nboBatchRuntimeStart \u2013 1`\n7. Script \u2192 `StartBatchBackup`\n8. Function \u2192 `SE_StartBatchBackup`\n9. Variable \u2192 `nboBatchBackupStart`\n10. Function \u2192 `Fun_BatchBackup_SaveRemanentData`\n11. Script \u2192 `Sct_SaveRemanentDataAllProjects` *(SCADA project only)*\n12. Function \u2192 `Fun_SE_SaveRemanentDataAllProjects` *(SCADA project only)*\n13. Function \u2192 `Fun_BatchBackup_ExportE1Files`\n14. Function \u2192 `Fun_BatchBackup_ExportS1Files`\n15. Script \u2192 `Sct_BatchBackupExportArchives`\n16. Function \u2192 `Fun_SE_BatchBackupExportArchives`\n17. Timer \u2192 `Tfu_BatchBackupExportArchives`\n\n**Additional configuration changes required:**\n- `B1_Batch.Active`: add limit `Grenzwert_1` \u2192 `BatchBackup_SaveRemanentData`; add limit `Grenzwert_2` \u2192 `BatchBackup_SaveRemanentData` (SCADA project: use `SE_SaveRemanentDataAllProjects`).\n- `B1_Batch.Start`: set property `Remanent`.\n- `B1_Batch.Start_Extern`: set property `Remanent`.\n- Create folder `ExportArx` inside the Runtime folder.\n- Autostart script: add function `WSV_nboBatchRuntimeStart \u2013 1`.\n- `Autostart_Delay` script: add function `WSV_nboBatchRuntimeStart \u2013 0`.\n- Script `StartBatchBackup` *(SCADA project only)*: add `B1_Start_Archive_S1` and `B1_Start_Archive_E1` functions from all sub-projects.\n\n**Wizard-based import alternative:** use `ImportModelWizard` to import plant model `BatchBackup`; all required Zenon components are imported automatically and `BatchBackup` is assigned to the `Basic` plant model. Sub-projects must still be imported before the SCADA project.\n\n**Document versions:**\n\n| Date | Version | Author | Change |\n|---|---|---|---|\n| 2025-07-15 | 0.1 | [Author 1] | Initial creation |\n| 2025-07-22 | 1.1 | [Author 1] | Added screenshots and manual model import section |\n\n## Sources\n- `CS-01_Archive_Backup_report` (support_report), meshmakers.io, [Author 1], 2025-07-22."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "993deb89-65fb-4655-bfe8-11ffff10296d",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158540.653433,
+            "end_time": 1778158551.623533,
+            "duration": 10.970099925994873,
+            "children": [
+              {
+                "id": "2b51a68f-bb37-45ad-b3f5-7d865b8b6b50",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "993deb89-65fb-4655-bfe8-11ffff10296d",
+                "start_time": 1778158540.653693,
+                "end_time": 1778158551.62348,
+                "duration": 10.969787120819092,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nThe `BatchBackup` plant model extends the Groninger\u2013Schott Archive SCADA system (Zenon Runtime) with an automatic backup routine that activates whenever the Zenon Runtime terminates uncontrolled during an active batch production run. On the next Runtime start the system detects the crash, stops and restarts archives E1 and S1, notifies the operator via a popup, and resumes the batch process without data loss. During normal batch production, archives S1 and E1 are copied to the `ExportArx` folder every 5 minutes as a rolling safety net. Parametrisation and testing were carried out on virtual machine `VM 13462_Scada`.\n\n## Decisions\n- **Backup trigger logic via three variables** (`B1_Batch.Start`, `nboBatchRuntimeStart`, `nboBatchBackupStart`): the backup procedure starts only when both `nboBatchRuntimeStart` (set by the Autostart script) and the remanent variable `B1_Batch.Start` are `True` simultaneously, indicating an uncontrolled shutdown during batch production. On a normal Runtime start `B1_Batch.Start` is `False` and the backup is skipped.\n- **Rolling 5-minute archive export** during batch production: archives S1 and E1 (`*.ARS` / `*.ARX`) are copied to the Runtime export folder `ExportArx` on a 5-minute timer (`Tfu_BatchBackupExportArchives`) via script `SE_BatchBackupExportArchives`, ensuring at most 5 minutes of data can be lost.\n- **Import order constraint**: the `BatchBackup` plant model must be imported into all sub-projects before the SCADA project, because script `SaveRemanentDataAllProject` calls functions residing in the sub-projects.\n- **Red batch-name highlight on restart is expected behaviour**: the batch name is shown with a red background at Runtime start because uniqueness is re-validated against a name already assigned at batch start; this is documented as normal and acceptable.\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n**Key scripts and their execution sequence:**\n\n| Script | Triggered by | Actions (in order) |\n|---|---|---|\n| `SE_StartBatchBackup` | `nboBatchBackupStart` math variable | 1. Stop archives E1 and S1 \u00b7 2. Show popup `Pop_BatchBackup` \u00b7 3. Reset `nboBatchRuntimeStart` \u00b7 4. Restart archives E1 and S1 \u00b7 5. (SCADA project only) Start all S1 and E1 archives from sub-projects |\n| `SE_BatchBackupExportArchives` (also referred to as `BatchBackupExportArchives` in section 4.1.2 of the source) | Timer `Tfu_BatchBackupExportArchives` (5 min) | 1. Copy `E1.ARS` + `E1.ARX` from Runtime data folder \u2192 `ExportArx` \u00b7 2. Copy `S1.ARS` + `S1.ARX` from Runtime data folder \u2192 `ExportArx` |\n\n**Manual XML import sequence (17 components, in required order):**\n1. Template \u2192 `Fra_F_PopupBatchBackup`\n2. Screen \u2192 `Scr_Pop_BatchBackup`\n3. Function \u2192 `SS_Pop_BatchBackup`\n4. Variable \u2192 `nboBatchRuntimeStart`\n5. Function \u2192 `nboBatchRuntimeStart \u2013 0`\n6. Function \u2192 `nboBatchRuntimeStart \u2013 1`\n7. Script \u2192 `StartBatchBackup`\n8. Function \u2192 `SE_StartBatchBackup`\n9. Variable \u2192 `nboBatchBackupStart`\n10. Function \u2192 `Fun_BatchBackup_SaveRemanentData`\n11. Script \u2192 `Sct_SaveRemanentDataAllProjects` *(SCADA project only)*\n12. Function \u2192 `Fun_SE_SaveRemanentDataAllProjects` *(SCADA project only)*\n13. Function \u2192 `Fun_BatchBackup_ExportE1Files`\n14. Function \u2192 `Fun_BatchBackup_ExportS1Files`\n15. Script \u2192 `Sct_BatchBackupExportArchives`\n16. Function \u2192 `Fun_SE_BatchBackupExportArchives`\n17. Timer \u2192 `Tfu_BatchBackupExportArchives`\n\n**Additional configuration changes required:**\n- `B1_Batch.Active`: add limit `Grenzwert_1` \u2192 `BatchBackup_SaveRemanentData` (SCADA project: use `SE_SaveRemanentDataAllProjects` instead); add limit `Grenzwert_2` \u2192 `BatchBackup_SaveRemanentData` (all projects).\n- `B1_Batch.Start`: set property `Remanent`.\n- `B1_Batch.Start_Extern`: set property `Remanent`.\n- Create folder `ExportArx` inside the Runtime folder.\n- Autostart script: add function `WSV_nboBatchRuntimeStart \u2013 1`.\n- `Autostart_Delay` script: add function `WSV_nboBatchRuntimeStart \u2013 0`.\n- Script `StartBatchBackup` *(SCADA project only)*: add `B1_Start_Archive_S1` and `B1_Start_Archive_E1` functions from all sub-projects.\n\n**Wizard-based import alternative:** use `ImportModelWizard` to import plant model `BatchBackup`; all required Zenon components are imported automatically and `BatchBackup` is assigned to the `Basic` plant model. Sub-projects must still be imported before the SCADA project.\n\n**Document versions:**\n\n| Date | Version | Author | Change |\n|---|---|---|---|\n| 2025-07-15 | 0.1 | [Author 1] | Initial creation |\n| 2025-07-22 | 1.1 | [Author 1] | Added screenshots and manual model import section |\n\n## Sources\n- `CS-01_Archive_Backup_report` (support_report), meshmakers.io, [Author 1], 2025-07-22."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 9289,
+          "outputTokens": 2996,
+          "totalTokens": 12285,
+          "cacheWriteInputTokens": 5212,
+          "cacheReadInputTokens": 3658
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3732,
+              "outputTokens": 1483,
+              "totalTokens": 5215,
+              "cacheWriteInputTokens": 3658
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "3d9f3869-0805-4eac-97b4-392e6d61b12f",
+                "usage": {
+                  "inputTokens": 3732,
+                  "outputTokens": 1483,
+                  "totalTokens": 5215,
+                  "cacheWriteInputTokens": 3658
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 5557,
+              "outputTokens": 1513,
+              "totalTokens": 7070,
+              "cacheReadInputTokens": 3658,
+              "cacheWriteInputTokens": 1554
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "3e9e7a0d-43f2-43a2-a070-4b65ef18e039",
+                "usage": {
+                  "inputTokens": 5557,
+                  "outputTokens": 1513,
+                  "totalTokens": 7070,
+                  "cacheReadInputTokens": 3658,
+                  "cacheWriteInputTokens": 1554
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 2,
+        "total_duration": 9.808129072189331,
+        "average_cycle_time": 4.9040645360946655,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "0fe71ab1-cdea-45a7-9c59-7418d12af798",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158532.876838,
+            "end_time": 1778158540.651048,
+            "duration": 7.774209976196289,
+            "children": [
+              {
+                "id": "37f54549-6034-4683-a3c4-9f451fe10f93",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "0fe71ab1-cdea-45a7-9c59-7418d12af798",
+                "start_time": 1778158532.877001,
+                "end_time": 1778158540.65099,
+                "duration": 7.773988962173462,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "- **Hallucination**: The summary states the system \"copies the most recently exported archive files back into the active archives\" on restart. The source does not describe this reverse-copy step; it only says archives E1 and S1 are stopped, then restarted, and the popup is shown. This claim is unsupported.\n\n- **Grenzwert_1 attribution error**: The source states `Grenzwert_1` should use `SE_SaveRemanentDataAllProjects` only in the SCADA project, but `Grenzwert_2` should use `BatchBackup_SaveRemanentData` in all cases. The draft incorrectly applies the SCADA-project qualifier to `Grenzwert_1` only and omits that `Grenzwert_2` always uses `BatchBackup_SaveRemanentData` (not the `AllProjects` variant).\n\n- **Script name inconsistency**: The source names the script in section 4.1 as `SE_BatchBackupExportArchives`, but section 4.1.2 heading calls it `BatchBackupExportArchives`. The draft uses `SE_BatchBackupExportArchives` throughout without noting this discrepancy; minor but the table trigger description could reflect the source's section 4.1 naming precisely."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "98a93ffd-839e-4e4b-9441-caeef718a535",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158551.626453,
+            "end_time": 1778158553.660372,
+            "duration": 2.033919095993042,
+            "children": [
+              {
+                "id": "6260ff98-c944-4591-9990-49d79055dfef",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "98a93ffd-839e-4e4b-9441-caeef718a535",
+                "start_time": 1778158551.626687,
+                "end_time": 1778158553.660332,
+                "duration": 2.033644914627075,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 10411,
+          "outputTokens": 311,
+          "totalTokens": 10722,
+          "cacheWriteInputTokens": 4585,
+          "cacheReadInputTokens": 2761
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 4282,
+              "outputTokens": 306,
+              "totalTokens": 4588,
+              "cacheWriteInputTokens": 2761
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "cf9ecf07-c693-4dfc-a1cd-d1f70aa86139",
+                "usage": {
+                  "inputTokens": 4282,
+                  "outputTokens": 306,
+                  "totalTokens": 4588,
+                  "cacheWriteInputTokens": 2761
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 6129,
+              "outputTokens": 5,
+              "totalTokens": 6134,
+              "cacheReadInputTokens": 2761,
+              "cacheWriteInputTokens": 1824
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "50a387a6-2985-469d-afca-8f23efc4c6f1",
+                "usage": {
+                  "inputTokens": 6129,
+                  "outputTokens": 5,
+                  "totalTokens": 6134,
+                  "cacheReadInputTokens": 2761,
+                  "cacheWriteInputTokens": 1824
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

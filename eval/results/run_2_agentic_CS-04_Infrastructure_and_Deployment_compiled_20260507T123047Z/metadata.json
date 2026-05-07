@@ -1,0 +1,182 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-04_Infrastructure_and_Deployment_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-04_Infrastructure_and_Deployment_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:30:07+00:00",
+  "num_calls": 2,
+  "writer_calls": 1,
+  "reviewer_iterations": 1,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 40.04,
+  "total_cost_usd": 0.095231,
+  "total_tokens": 18786,
+  "prompt_tokens": 16418,
+  "completion_tokens": 2368,
+  "cache_read_input_tokens": 0,
+  "cache_creation_input_tokens": 13943,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 16418,
+      "outputTokens": 2368,
+      "totalTokens": 18786,
+      "cacheReadInputTokens": 0,
+      "cacheWriteInputTokens": 13943
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 1,
+        "total_duration": 37.57304096221924,
+        "average_cycle_time": 37.57304096221924,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "ee8e814f-47b2-48cb-ab45-33a7cd573c96",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778157007.866167,
+            "end_time": 1778157045.439208,
+            "duration": 37.57304096221924,
+            "children": [
+              {
+                "id": "976469bb-3b54-4708-88cf-c9aeee915d97",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "ee8e814f-47b2-48cb-ab45-33a7cd573c96",
+                "start_time": 1778157007.866275,
+                "end_time": 1778157045.439142,
+                "duration": 37.572866916656494,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nWork item AB#3151 (\"LKV: familiarize yourself with the topic and the current solution\") covers infrastructure stabilisation, deployment restructuring, credential management hardening, and test coverage expansion for the LKVLogistic CLI. All work was authored by [Developer 1] across 23 commits and 3 pull requests between 2026-01-13 and 2026-03-23. The work item remains in **Active** state. Total churn across the period: 99 files changed, 2 729 insertions, 643 deletions.\n\n## Decisions\n- **Adopt Kustomize for credential and deployment management.** `TestConfigCommand.cs` renamed to `DisplayConfigCommand.cs`; deployment overlays restructured under `deployment/overlays/lkv/{production,staging}/` with Kustomize `kustomization.yaml` files. Deprecated flat deployment templates removed (commit `6db7a94`, 2026-02-10).\n- **Credentials file excluded from version control.** `credentials-secret.yaml` converted to `credentials-secret.yaml.example` and added to `.gitignore` to prevent secret leakage (commit `fb7269b`, 2026-03-05).\n- **ACR pull secret removed from manifests; handled by cluster.** `acr-secret.yaml` deleted from `deployment/base/`; `cronjobs.yaml` references removed (commit `83f7507`, 2026-02-19).\n- **Switch to built-in StorageClass.** Custom `storageclass.yaml` removed; `storage.yaml` updated to reference the cluster's built-in StorageClass (commit `ae4873b`, 2026-02-19).\n- **StorageClass creation moved to a separate chore task** rather than being part of the main deployment manifest (commit `b8bb38a`, 2026-02-19).\n- **`imagePullPolicy` changed to `IfNotPresent`** in `cronjobs.yaml` (commit `70f7117`, 2026-03-05).\n- **Automated version-number replacement removed from manifests; made pipeline-specific** (commit `70f7117`, 2026-03-05).\n- **Error handling: skip (do not crash) on errors in `CsvAuftragsRueckmeldung.cs` and `CsvBestandsmeldung.cs`** (PR #352 description, 2026-03-10).\n- **Add SFTP server (SFTPGo via Testcontainers) for integration testing in staging** (PR #352 / PR #354).\n- **Add SMTP-based error notification when configured** (PR #352, 2026-03-10).\n- **Bump Billbee API Client dependency to 2.4.3** (commit `5f6cb6d`, 2026-03-23).\n- **`backoffLimit` and `activeDeadlineSeconds` added to `cronjobs.yaml`** to bound retry and runtime behaviour (commit `20d9d37`, 2026-03-05).\n- **Staging environment mapped to the existing `lkv` namespace** rather than a separate namespace (commit `45507d5`, 2026-03-05).\n- **Credentials loaded via Kubernetes Secrets** in the deployment template (commit `1b64323`, 2026-01-26).\n\n## Action items (with owner and due date where stated)\n- (none explicitly recorded in the source artifact)\n\n## Blockers and open questions\n- Work item AB#3151 remains in **Active** state; acceptance criteria (overview of solution, stability enhancements, TODO fixes, removal of \"Sample\"-named classes, developer docs) are not confirmed as fully met in the source artifact.\n\n## Implementation detail (commits, files, line counts where present)\n\n**Pull Requests**\n| PR | Title | Merged |\n|----|-------|--------|\n| #349 | Add Credential Injection, Unit Tests and Misc. Minor Improvements | 2026-03-05 |\n| #352 | Add Skipping of Feedback Errors and Email Notifications of Errors | 2026-03-10 |\n| #354 | Adapt to new SMTP Staging and Add Integration Tests | 2026-04-07 |\n\nAll PRs merged via rebase strategy by [Developer 1].\n\n**Commit log**\n| Date | Hash | Summary |\n|------|------|---------|\n| 2026-01-13 | `af524da` | Add unit tests, fix logging issues \u2014 21 files, +1 271 / \u221272 |\n| 2026-01-13 | `baedcb0` | Add credentials \u2014 1 file, +1 / \u22122 |\n| 2026-01-26 | `1b64323` | Add README.md, `TestConfigCommand.cs`, Kubernetes secret credential loading \u2014 7 files, +562 / \u221233 |\n| 2026-01-26 | `fb836a7` | Revert overzealous changes \u2014 11 files, +52 / \u2212293 |\n| 2026-01-26 | `af4e2d1` | Restore parity with origin/main \u2014 1 file, +2 / \u22122 |\n| 2026-01-26 | `864a968` | Fix warnings/suggestions in unit tests \u2014 3 files, +12 / \u22129 |\n| 2026-02-09 | `54f0b02` | Rename `TestConfigCommand.cs` \u2192 `DisplayConfigCommand.cs`; prepare Kustomize \u2014 9 files, +253 / \u22126 |\n| 2026-02-10 | `bd36650` | Update `DisplayConfigCommand.cs`; continue Kustomize migration \u2014 6 files, +86 / \u221268 |\n| 2026-02-10 | `6db7a94` | Remove deprecated deployment files \u2014 6 files, \u2212237 |\n| 2026-02-10 | `d0401b8` | Update `DisplayConfigCommand.cs` \u2014 1 file, +2 / \u22126 |\n| 2026-02-17 | `428dd75` | Update README.md \u2014 1 file, +1 / \u221211 |\n| 2026-02-19 | `85259a2` | Test build \u2014 1 file, +1 |\n| 2026-02-19 | `cf4b66f` | Move files from staging to production overlay \u2014 4 files, 0 net |\n| 2026-02-19 | `0560803` | Update staging naming; fix version number bug in `azure-pipelines.yml` \u2014 3 files, +5 / \u22125 |\n| 2026-02-19 | `b8bb38a` | Move StorageClass creation to chore task \u2014 3 files, +61 / \u221230 |\n| 2026-02-19 | `ae4873b` | Switch to built-in StorageClass \u2014 2 files, +1 / \u221231 |\n| 2026-02-19 | `83f7507` | Remove ACR secret (now cluster-managed) \u2014 4 files, +42 / \u221245 |\n| 2026-03-05 | `fb7269b` | Convert credentials file to `.example`; add to `.gitignore` \u2014 2 files, +16 / \u22125 |\n| 2026-03-05 | `0eb0805` | Change `cronjobs.yaml` permissions \u2014 1 file, +8 / \u22124 |\n| 2026-03-05 | `70f7117` | Add staging deployment; `imagePullPolicy` \u2192 `IfNotPresent`; version replacement made pipeline-specific \u2014 7 files, +99 / \u221212 |\n| 2026-03-05 | `45507d5` | Map staging to `lkv` namespace \u2014 2 files, +7 / \u22127 |\n| 2026-03-05 | `20d9d37` | Add `backoffLimit` and `activeDeadlineSeconds` to `cronjobs.yaml` \u2014 1 file, +8 |\n| 2026-03-23 | `5f6cb6d` | Bump Billbee API Client to 2.4.3 \u2014 2 files, +2 / \u22122 |\n\n**Notable file-level changes**\n- `tests/LKVLogistic.Cli.Tests/` \u2014 five new test files added (`AutoMapperTests.cs`, `CsvAuftragsImportTests.cs`, `CsvAuftragsRueckmeldungTests.cs`, `CsvBestandsmeldungTests.cs`, `OrderMapperTests.cs`), totalling hundreds of lines of unit-test coverage.\n- `LKVLogistic.Cli.IntegrationTests` project added (PR #354) with 19 integration tests using Testcontainers (SFTPGo) and Moq.\n- `deployment/base/cronjobs.yaml` \u2014 new base manifest introduced (commit `54f0b02`) and iteratively refined across multiple commits.\n- `README.md` \u2014 substantially expanded (commit `1b64323`, +453 lines) and subsequently refined.\n- `src/LKVLogistic.Cli/Commands/` \u2014 `SampleOptions.cs` renamed to `GlobalOptions.cs`; multiple command classes updated for credential injection and logging fixes.\n\n**Totals:** 99 files changed, 2 729 insertions(+), 643 deletions(\u2212)\n\n## Sources\n- Development activity report CS-04_Infrastructure_and_Deployment_compiled, work item AB#3151, period 2026-01-13 to 2026-03-23."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 7494,
+          "outputTokens": 2363,
+          "totalTokens": 9857,
+          "cacheWriteInputTokens": 7420
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 7494,
+              "outputTokens": 2363,
+              "totalTokens": 9857,
+              "cacheWriteInputTokens": 7420
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "91b9e745-4ed2-4e90-8139-03da27186947",
+                "usage": {
+                  "inputTokens": 7494,
+                  "outputTokens": 2363,
+                  "totalTokens": 9857,
+                  "cacheWriteInputTokens": 7420
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 1,
+        "total_duration": 2.4638309478759766,
+        "average_cycle_time": 2.4638309478759766,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "7af4a50c-2996-4a37-bf3e-65a3af85d47e",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778157045.44126,
+            "end_time": 1778157047.905091,
+            "duration": 2.4638309478759766,
+            "children": [
+              {
+                "id": "53e90346-c17d-4e02-b7f0-d9da291e0082",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "7af4a50c-2996-4a37-bf3e-65a3af85d47e",
+                "start_time": 1778157045.441473,
+                "end_time": 1778157047.905004,
+                "duration": 2.463531017303467,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 8924,
+          "outputTokens": 5,
+          "totalTokens": 8929,
+          "cacheWriteInputTokens": 6523
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 8924,
+              "outputTokens": 5,
+              "totalTokens": 8929,
+              "cacheWriteInputTokens": 6523
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "cc675fd2-bf6b-4551-b6d8-eb85dcf8e00b",
+                "usage": {
+                  "inputTokens": 8924,
+                  "outputTokens": 5,
+                  "totalTokens": 8929,
+                  "cacheWriteInputTokens": 6523
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

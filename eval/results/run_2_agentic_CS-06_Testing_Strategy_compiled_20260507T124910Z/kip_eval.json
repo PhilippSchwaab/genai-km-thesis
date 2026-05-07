@@ -1,0 +1,115 @@
+{
+  "artifact_id": "CS-06_Testing_Strategy_compiled",
+  "run_dir": "/Users/philipp/PycharmProjects/genai-km-thesis/eval/results/run_2_agentic_CS-06_Testing_Strategy_compiled_20260507T124910Z",
+  "total_kips": 11,
+  "recall": 0.9545,
+  "counts": {
+    "YES": 10,
+    "PARTIAL": 1,
+    "NO": 0
+  },
+  "eval_cost_usd": 0.052227,
+  "eval_latency_seconds": 34.41,
+  "eval_tokens": 14277,
+  "judgments": [
+    {
+      "kip_id": "KIP-001",
+      "kip_text": "A shell-script-based smoke test was the initial approach to integration testing",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes a shell-script-based smoke test (`deployment/smoke-test.sh`) as the initial approach, noting it was \"created then removed across the 2026-03-17/18 commits\" and references the \"inferred shift away from shell-based smoke testing toward a structured .NET integration test suite.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-002",
+      "kip_text": "The shell-script smoke test approach was abandoned after repeated debugging revealed it was unreliable",
+      "category": "RAT",
+      "implicit": true,
+      "judgment": "PARTIAL",
+      "reason": "The wiki entry shows the shell-based smoke test was created and then removed, and documents repeated bugfix commits against it, but does not explicitly state it was abandoned because it was found to be \"unreliable\" — only that there was an \"inferred shift away from shell-based smoke testing.\"",
+      "score": 0.5
+    },
+    {
+      "kip_id": "KIP-003",
+      "kip_text": "E2E tests were removed from the project",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Remove automated E2E testing from the repository\" as a decision and references commit `27bbf4f` with the message \"Remove E2E Testing. Update Readme with manual E2E steps.\"",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-004",
+      "kip_text": "Manual E2E testing steps were documented in the README as a fallback after automated E2E removal",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly states \"Manual E2E steps were documented in the README\" in the summary, and further details this in the Decisions section and commit table (commit `27bbf4f`: \"Remove E2E Testing. Update Readme with manual E2E steps.\"), clearly capturing the fact as a fallback after automated E2E removal.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-005",
+      "kip_text": "A dedicated C# integration test project was created and added to the solution as the replacement testing strategy",
+      "category": "DEC",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly describes the creation of a dedicated C# integration test project (`LKVLogistic.Cli.IntegrationTests`) added to the solution (`LkvLogistik.sln`) as the replacement for the shell-based E2E testing approach.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-006",
+      "kip_text": "A BillbeeMockFixture was created for mocking external API interactions in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `Fixtures/BillbeeMockFixture.cs` (65 lines) as a file introduced in the new integration test project, clearly indicating a BillbeeMockFixture was created for mocking external API interactions in tests.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-007",
+      "kip_text": "An SftpGoFixture was created for simulating SFTP file transfer operations in tests",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `Fixtures/SftpGoFixture.cs` (107 lines) as a key file introduced in the new integration test project, clearly indicating it was created for simulating SFTP file transfer operations in tests.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-008",
+      "kip_text": "Integration tests were created covering the SFTP client functionality",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `SftpClientTests.cs` (190 lines) as a key file in the integration test project, directly confirming that integration tests covering SFTP client functionality were created.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-009",
+      "kip_text": "Integration tests were created for all four core sync operations: Orders, OrderFeedback, Products, and Stocks",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists all four integration test files: `SyncOrderFeedbackIntegrationTests.cs`, `SyncOrdersIntegrationTests.cs`, `SyncProductsIntegrationTests.cs`, and `SyncStocksIntegrationTests.cs`, confirming tests were created for all four core sync operations.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-010",
+      "kip_text": "A CsvTestData helper class was created for generating structured test data",
+      "category": "IMP",
+      "implicit": false,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly lists `TestData/CsvTestData.cs` (41 lines) as a key file introduced in the new integration test project, confirming the creation of a CsvTestData helper class for generating structured test data.",
+      "score": 1.0
+    },
+    {
+      "kip_id": "KIP-011",
+      "kip_text": "Integration test warnings and code quality issues were cleaned up in a follow-up pass",
+      "category": "IMP",
+      "implicit": true,
+      "judgment": "YES",
+      "reason": "The wiki entry explicitly records two follow-up commits on 2026-03-23 — \"Fix Warnings in Integration tests\" (`ce26c70`) and \"Further integration test cleanup\" (`79a4931`) — which directly correspond to cleaning up integration test warnings and code quality issues in a follow-up pass.",
+      "score": 1.0
+    }
+  ]
+}

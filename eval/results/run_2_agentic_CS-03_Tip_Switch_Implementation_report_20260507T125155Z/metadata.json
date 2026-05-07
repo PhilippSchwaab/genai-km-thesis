@@ -1,0 +1,182 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-03_Tip_Switch_Implementation_report",
+  "artifact_type": "support_report",
+  "artifact_files": [
+    "CS-03_Tip_Switch_Implementation_report.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:51:25+00:00",
+  "num_calls": 2,
+  "writer_calls": 1,
+  "reviewer_iterations": 1,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 29.5,
+  "total_cost_usd": 0.05131,
+  "total_tokens": 9308,
+  "prompt_tokens": 7738,
+  "completion_tokens": 1570,
+  "cache_read_input_tokens": 0,
+  "cache_creation_input_tokens": 6061,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 7738,
+      "outputTokens": 1570,
+      "totalTokens": 9308,
+      "cacheReadInputTokens": 0,
+      "cacheWriteInputTokens": 6061
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 1,
+        "total_duration": 28.33479595184326,
+        "average_cycle_time": 28.33479595184326,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "cdd22c4a-6d3b-4bdf-a2fb-b0eb3023e2db",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158285.505762,
+            "end_time": 1778158313.840558,
+            "duration": 28.33479595184326,
+            "children": [
+              {
+                "id": "e3019421-0ac9-4da4-876b-623dcd210444",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "cdd22c4a-6d3b-4bdf-a2fb-b0eb3023e2db",
+                "start_time": 1778158285.505835,
+                "end_time": 1778158313.840493,
+                "duration": 28.334657907485962,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nImplementation report for a tip-switch (Tipptaster) feature rolled out across production lines L6, L7, and L8 for customer Ompi (ticket 1378291). When a tip switch is physically connected to a line, the machine must be prevented from entering automatic mode; additionally, the operator can pre-select a machine speed while tip-switch mode is active. The implementation is identical across all affected Zenon client projects. Authored by [Author 1], version 1.0, dated 2026-03-20.\n\n## Decisions\n- Add two new Zenon variables per project (`fkt.tipptaster_linie` [Bool] and `r32._10` [REAL]) to represent tip-switch state and tip-switch machine speed respectively.\n- Introduce a dedicated interlock (`LockMachineAutoMode`) combining the existing general-plant input variable and the new tip-switch variable via OR logic, rather than modifying existing interlocks directly.\n- Machine speed setpoint range fixed at **10\u2013200 pcs/min**, sourced from the variable's own setpoint limits.\n- Display authorization level for the new speed input field set to **33** (\"Machine parametrization\").\n- Language strings added in three languages (German, English, Italian) for both the speed label and the interlock message, with per-project HMI string IDs assigned.\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n\n**Scope**\n- Zenon version: 8.0\n- SCADA: SCADAPC13106\n- Affected lines and machine numbers:\n  - L6: 13101, 13102, 13103, 13104\n  - L7: 13242, 13244, 13245, 13246\n  - L8: 13549, 13550, 13551, 13552\n- Affected client projects: 1_HMI_13101\u201313104, 1_HMI_13242/44/45/46, 1_HMI_13549\u201313552\n\n**Variables added (per project)**\n\n| Variable | Driver | Data block | Offset | Bit | Data type | Purpose |\n|---|---|---|---|---|---|---|\n| `1_S7\\db_allgemein.fkt.tipptaster_linie` | S7TCP32 \u2013 1_S7 TCP-IP | 1804 | 2 | 3 | Bool | Tip switch active \u2192 automatic mode disabled |\n| `1_S7\\db_allgemein.r32._10` | S7TCP32 \u2013 1_S7 TCP-IP | 1804 | 160 | 0 | REAL | Machine speed setpoint during tip-switch mode (10\u2013200 pcs/min) |\n\n**Interlock added**\n- Name: `LockMachineAutoMode`\n- Variables: `1_S7\\db_anl_ges.eing`, `1_S7\\db_allgemein.fkt.tipptaster_linie`\n- Logic: `(X01.Wert = 1) OR (X02.Wert = 1)`\n\n**Screens modified**\n- `Start` \u2014 button `Basic_ButtonToggleFunctionTrigger~~1_S7\\db_anl_0.op_auto`: interlock set to `LockMachineAutoMode`, text set to `@<Verriegelung>`.\n- `Pop_Favorites` \u2014 same button and same changes as `Start`.\n- Machine speed screen (project-dependent image name):\n\n| Image name | Projects |\n|---|---|\n| `APPL_Machinemaster_Data` | 1_HMI_13101, 13103, 13242, 13245, 13549, 13551 |\n| `APPL_MachinemasterDataGeneral` | 1_HMI_13102, 13244, 13550 |\n| `Appl_Machinemaster0` | 1_HMI_13104, 13246, 13552 |\n\nNew input field added: static text `@<Maschinengeschwindigkeit>`, variable `1_S7\\db_allgemein.r32._10`, setpoint limits taken from variable, authorization level 33.\n\n**Language file entries (HMI string IDs)**\n\n| Project(s) | `<Maschinengeschwindigkeit>` ID | `<Verriegelung>` ID |\n|---|---|---|\n| 1_HMI_13101 | HMI7748 | HMI7749 |\n| 1_HMI_13102, 13103 | HMI7756 | HMI7757 |\n| 1_HMI_13104 | HMI7772 | HMI7773 |\n| 1_HMI_13242, 13244, 13245, 13246 | HMI8517 | HMI8518 |\n| 1_HMI_13549 | HMI8651 | HMI8652 |\n| 1_HMI_13550 | HMI8695 | HMI8696 |\n| 1_HMI_13551 | HMI8936 | HMI8937 |\n| 1_HMI_13552 | HMI8514 | HMI8515 |\n\nString values:\n- `<Maschinengeschwindigkeit>` \u2014 DE: *Max. Geschwindigkeit w\u00e4hrend Tiptaster aktiv* / EN: *Max. speed while touch switch is active* / IT: *Velocit\u00e0 massima quando l'interruttore a sfioramento \u00e8 attivo*\n- `<Verriegelung>` \u2014 DE: *Funktion nicht m\u00f6glich, solange die Maschine l\u00e4uft oder Tiptaster an die Line angeschlossen ist!* / EN: *Function not possible while the machine is running or a Tip switch is connected to the line!* / IT: *Funzione non disponibile mentre la macchina \u00e8 in funzione o se un interruttore a sfioramento \u00e8 collegato alla linea!*\n\n## Sources\n- CS-03_Tip_Switch_Implementation_report (support_report), meshmakers.io, [Author 1], 2026-03-20, v1.0. Customer ticket: Ompi 1378291."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 3553,
+          "outputTokens": 1565,
+          "totalTokens": 5118,
+          "cacheWriteInputTokens": 3479
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3553,
+              "outputTokens": 1565,
+              "totalTokens": 5118,
+              "cacheWriteInputTokens": 3479
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "053dc7d3-d7ae-453d-84a0-34df3486ed92",
+                "usage": {
+                  "inputTokens": 3553,
+                  "outputTokens": 1565,
+                  "totalTokens": 5118,
+                  "cacheWriteInputTokens": 3479
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 1,
+        "total_duration": 1.1638498306274414,
+        "average_cycle_time": 1.1638498306274414,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "60619b87-5013-4dd0-94c0-89732e949e39",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158313.842518,
+            "end_time": 1778158315.006368,
+            "duration": 1.1638498306274414,
+            "children": [
+              {
+                "id": "413e27f4-f410-42a0-9f52-c394c28ee5a2",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "60619b87-5013-4dd0-94c0-89732e949e39",
+                "start_time": 1778158313.8426461,
+                "end_time": 1778158315.006303,
+                "duration": 1.1636569499969482,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 4185,
+          "outputTokens": 5,
+          "totalTokens": 4190,
+          "cacheWriteInputTokens": 2582
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 4185,
+              "outputTokens": 5,
+              "totalTokens": 4190,
+              "cacheWriteInputTokens": 2582
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "b968969c-6c21-4422-81e5-501ad86db773",
+                "usage": {
+                  "inputTokens": 4185,
+                  "outputTokens": 5,
+                  "totalTokens": 4190,
+                  "cacheWriteInputTokens": 2582
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,288 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-06_Testing_Strategy_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-06_Testing_Strategy_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:48:38+00:00",
+  "num_calls": 4,
+  "writer_calls": 2,
+  "reviewer_iterations": 2,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 31.75,
+  "total_cost_usd": 0.072436,
+  "total_tokens": 18156,
+  "prompt_tokens": 15848,
+  "completion_tokens": 2308,
+  "cache_read_input_tokens": 5487,
+  "cache_creation_input_tokens": 6782,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 15848,
+      "outputTokens": 2308,
+      "totalTokens": 18156,
+      "cacheReadInputTokens": 5487,
+      "cacheWriteInputTokens": 6782
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 2,
+        "total_duration": 21.866833925247192,
+        "average_cycle_time": 10.933416962623596,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "335d9c12-632d-42fe-a4d4-0c0bc6e68be3",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158118.972814,
+            "end_time": 1778158132.5910149,
+            "duration": 13.618200778961182,
+            "children": [
+              {
+                "id": "92098c71-1138-42eb-adf1-b2744a1afd4d",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "335d9c12-632d-42fe-a4d4-0c0bc6e68be3",
+                "start_time": 1778158118.9728892,
+                "end_time": 1778158132.590945,
+                "duration": 13.618055820465088,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nWork item AB#3651 (Integration Testing) progressed across 2026-03-17 to 2026-03-23 under [Developer 1]. The sprint established a semi-automated integration test suite for the CLI project, iteratively debugged the smoke-test script, then replaced the shell-based E2E approach with a structured .NET integration test project. Manual E2E steps were documented in the README. 9 commits, 27 files changed, net +1,216 lines (1,822 insertions, 606 deletions).\n\n## Decisions\n- Remove automated E2E testing from the repository (commit `27bbf4f`, 2026-03-18). Manual E2E steps documented in `README.md` instead. Driver: inferred shift away from shell-based smoke testing toward a structured .NET integration test suite.\n- Adopt a .NET integration test project (`LKVLogistic.Cli.IntegrationTests`) with fixture-based test infrastructure (commit `5088faa`, 2026-03-18).\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n\n| Date | Hash | Message | Net change |\n|------|------|---------|------------|\n| 2026-03-17 | `2e9f1a8` | Semi Auto Integration testing | +321 |\n| 2026-03-17 | `d9f59c2` | Bugfix Integration Testing | +45 / -38 |\n| 2026-03-17 | `3caa466` | Continue Bugfix Integration Testing | +10 / -4 |\n| 2026-03-17 | `de655a3` | Bugfix Integration Testing | +120 / -257 |\n| 2026-03-17 | `21350c8` | Update Integration testing logging | +2 / -2 |\n| 2026-03-18 | `27bbf4f` | Remove E2E Testing. Update Readme with manual E2E steps. | +49 / -207 |\n| 2026-03-18 | `5088faa` | Add Integration Tests | +1,239 / -9 |\n| 2026-03-23 | `ce26c70` | Fix Warnings in Integration tests | +10 / -14 |\n| 2026-03-23 | `79a4931` | Further integration test cleanup | +26 / -75 |\n\n**Key files introduced or significantly modified:**\n- `deployment/smoke-test.sh` \u2014 created then removed across the 2026-03-17/18 commits.\n- `deployment/test-data/BE_SMOKETEST.txt` \u2014 created then removed.\n- `README.md` \u2014 expanded with manual E2E steps (+59 lines in `27bbf4f`, further +34 in `5088faa`).\n- `LkvLogistik.sln` \u2014 updated to include new test project (+15 lines).\n- `tests/LKVLogistic.Cli.IntegrationTests/` \u2014 new project containing:\n  - `LKVLogistic.Cli.IntegrationTests.csproj` (23 lines)\n  - `Fixtures/BillbeeMockFixture.cs` (65 lines)\n  - `Fixtures/SftpGoFixture.cs` (107 lines)\n  - `SftpClientTests.cs` (190 lines)\n  - `SyncOrderFeedbackIntegrationTests.cs` (202 lines)\n  - `SyncOrdersIntegrationTests.cs` (227 lines)\n  - `SyncProductsIntegrationTests.cs` (170 lines)\n  - `SyncStocksIntegrationTests.cs` (174 lines)\n  - `TestData/CsvTestData.cs` (41 lines)\n\n**Totals:** 27 files changed, 1,822 insertions(+), 606 deletions(\u2212).\n\n## Sources\n- CS-06_Testing_Strategy_compiled, development activity report, 2026-03-17 to 2026-03-23, work item AB#3651."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "546c8b75-59b9-4eda-b437-b9e4a7d11b32",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158139.959796,
+            "end_time": 1778158148.208429,
+            "duration": 8.24863314628601,
+            "children": [
+              {
+                "id": "cfc48dc3-0936-4209-911d-6cc72636db35",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "546c8b75-59b9-4eda-b437-b9e4a7d11b32",
+                "start_time": 1778158139.9600189,
+                "end_time": 1778158148.208375,
+                "duration": 8.248356103897095,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nWork item AB#3651 (Integration Testing) progressed across 2026-03-17 to 2026-03-23 under [Developer 1]. The sprint established a semi-automated integration test suite for the CLI project, iteratively debugged the smoke-test script, then replaced the shell-based E2E approach with a structured .NET integration test project. Manual E2E steps were documented in the README. 9 commits, 27 files changed, 1,822 insertions(+), 606 deletions(\u2212). No pull requests were raised against this work item.\n\n## Decisions\n- Remove automated E2E testing from the repository (commit `27bbf4f`, 2026-03-18). Manual E2E steps documented in `README.md` instead. Driver: inferred shift away from shell-based smoke testing toward a structured .NET integration test suite.\n- Adopt a .NET integration test project (`LKVLogistic.Cli.IntegrationTests`) with fixture-based test infrastructure (commit `5088faa`, 2026-03-18).\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- (none recorded)\n\n## Implementation detail (commits, files, line counts where present)\n\nNo pull requests were found matching work item AB#3651.\n\n| Date | Hash | Message | Change |\n|------|------|---------|--------|\n| 2026-03-17 | `2e9f1a8` | Semi Auto Integration testing | +321 |\n| 2026-03-17 | `d9f59c2` | Bugfix Integration Testing | +45 / -38 |\n| 2026-03-17 | `3caa466` | Continue Bugfix Integration Testing | +10 / -4 |\n| 2026-03-17 | `de655a3` | Bugfix Integration Testing | +120 / -257 |\n| 2026-03-17 | `21350c8` | Update Integration testing logging | +2 / -2 |\n| 2026-03-18 | `27bbf4f` | Remove E2E Testing. Update Readme with manual E2E steps. | +49 / -207 |\n| 2026-03-18 | `5088faa` | Add Integration Tests | +1,239 / -9 |\n| 2026-03-23 | `ce26c70` | Fix Warnings in Integration tests | +10 / -14 |\n| 2026-03-23 | `79a4931` | Further integration test cleanup | +26 / -75 |\n\n**Key files introduced or significantly modified:**\n- `deployment/smoke-test.sh` \u2014 created then removed across the 2026-03-17/18 commits.\n- `deployment/test-data/BE_SMOKETEST.txt` \u2014 created then removed.\n- `README.md` \u2014 expanded with manual E2E steps (+59 lines in `27bbf4f`, further +34 in `5088faa`).\n- `LkvLogistik.sln` \u2014 updated to include new test project (+15 lines).\n- `tests/LKVLogistic.Cli.IntegrationTests/` \u2014 new project containing:\n  - `LKVLogistic.Cli.IntegrationTests.csproj` (23 lines)\n  - `Fixtures/BillbeeMockFixture.cs` (65 lines)\n  - `Fixtures/SftpGoFixture.cs` (107 lines)\n  - `SftpClientTests.cs` (190 lines)\n  - `SyncOrderFeedbackIntegrationTests.cs` (202 lines)\n  - `SyncOrdersIntegrationTests.cs` (227 lines)\n  - `SyncProductsIntegrationTests.cs` (170 lines)\n  - `SyncStocksIntegrationTests.cs` (174 lines)\n  - `TestData/CsvTestData.cs` (41 lines)\n\n**Totals:** 27 files changed, 1,822 insertions(+), 606 deletions(\u2212).\n\n## Sources\n- CS-06_Testing_Strategy_compiled, development activity report, 2026-03-17 to 2026-03-23, work item AB#3651."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 7828,
+          "outputTokens": 2066,
+          "totalTokens": 9894,
+          "cacheWriteInputTokens": 3192,
+          "cacheReadInputTokens": 3192
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3266,
+              "outputTokens": 1023,
+              "totalTokens": 4289,
+              "cacheWriteInputTokens": 3192
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "ef2ed202-5a43-4d97-85fa-acd7419cdf8b",
+                "usage": {
+                  "inputTokens": 3266,
+                  "outputTokens": 1023,
+                  "totalTokens": 4289,
+                  "cacheWriteInputTokens": 3192
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 4562,
+              "outputTokens": 1043,
+              "totalTokens": 5605,
+              "cacheReadInputTokens": 3192
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "add553c5-e1cd-4e42-8f35-7ccabf51ee87",
+                "usage": {
+                  "inputTokens": 4562,
+                  "outputTokens": 1043,
+                  "totalTokens": 5605,
+                  "cacheReadInputTokens": 3192
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 2,
+        "total_duration": 9.869315147399902,
+        "average_cycle_time": 4.934657573699951,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "6719b005-1b50-43fb-bb6e-efc13711c881",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158132.592992,
+            "end_time": 1778158139.957437,
+            "duration": 7.364444971084595,
+            "children": [
+              {
+                "id": "34b78f32-80c3-4875-b90c-6a75e332d604",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "6719b005-1b50-43fb-bb6e-efc13711c881",
+                "start_time": 1778158132.5931149,
+                "end_time": 1778158139.957372,
+                "duration": 7.364257097244263,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "- The summary states \"9 commits\" but the commit log table in the source lists 9 entries yet the draft's own commit table also shows 9 rows (including `79a4931`), which is correct \u2014 however the source's \"Total Commits: 9\" header matches, so no issue there.\n- The summary states \"net +1,216 lines\" as a net figure, but this is a hallucination: the source provides only gross insertions (1,822) and deletions (606); no net line count is given or calculable as a single authoritative figure in the source. This invented metric should be removed.\n- The commit message for `2e9f1a8` in the draft omits the prefix \"AB#3651:\" (minor but inconsistent with other rows that also omit it \u2014 acceptable for brevity, not a real issue).\n- No pull requests section is mentioned in the draft; the source explicitly states \"No pull requests found matching the specified work items.\" The draft should note this or it is an omission of a source fact."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "2e0d4fc2-325b-4770-8859-39557e50dcfb",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158148.2110348,
+            "end_time": 1778158150.715905,
+            "duration": 2.5048701763153076,
+            "children": [
+              {
+                "id": "11fc688a-b691-4ecd-b244-e91fac1f920a",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "2e0d4fc2-325b-4770-8859-39557e50dcfb",
+                "start_time": 1778158148.211225,
+                "end_time": 1778158150.715858,
+                "duration": 2.5046329498291016,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 8020,
+          "outputTokens": 242,
+          "totalTokens": 8262,
+          "cacheWriteInputTokens": 3590,
+          "cacheReadInputTokens": 2295
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 3356,
+              "outputTokens": 237,
+              "totalTokens": 3593,
+              "cacheWriteInputTokens": 2295
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "59ef0c96-1e58-4429-866d-5097c9097375",
+                "usage": {
+                  "inputTokens": 3356,
+                  "outputTokens": 237,
+                  "totalTokens": 3593,
+                  "cacheWriteInputTokens": 2295
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 4664,
+              "outputTokens": 5,
+              "totalTokens": 4669,
+              "cacheReadInputTokens": 2295,
+              "cacheWriteInputTokens": 1295
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "e388e07e-2981-4a88-8471-faf6f79ca9dd",
+                "usage": {
+                  "inputTokens": 4664,
+                  "outputTokens": 5,
+                  "totalTokens": 4669,
+                  "cacheReadInputTokens": 2295,
+                  "cacheWriteInputTokens": 1295
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

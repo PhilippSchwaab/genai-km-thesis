@@ -1,0 +1,176 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "development",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-02_Automatic_Screenshot_report",
+  "artifact_type": "support_report",
+  "artifact_files": [
+    "CS-02_Automatic_Screenshot_report.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-07T12:53:28+00:00",
+  "num_calls": 2,
+  "writer_calls": 1,
+  "reviewer_iterations": 1,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 7.27,
+  "total_cost_usd": 0.013554,
+  "total_tokens": 3122,
+  "prompt_tokens": 2773,
+  "completion_tokens": 349,
+  "cache_read_input_tokens": 0,
+  "cache_creation_input_tokens": 0,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 2773,
+      "outputTokens": 349,
+      "totalTokens": 3122,
+      "cacheReadInputTokens": 0,
+      "cacheWriteInputTokens": 0
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 1,
+        "total_duration": 5.933438062667847,
+        "average_cycle_time": 5.933438062667847,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "20d9921b-170e-4855-a527-c4e3624e0b8e",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158408.052811,
+            "end_time": 1778158413.986249,
+            "duration": 5.933438062667847,
+            "children": [
+              {
+                "id": "5fc98554-7cbc-417c-a391-108db7b62dba",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "20d9921b-170e-4855-a527-c4e3624e0b8e",
+                "start_time": 1778158408.052872,
+                "end_time": 1778158413.986188,
+                "duration": 5.933315992355347,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nSupport report describing the procedure to enable the automatic screenshot feature (\"Automatischer Bildschirmdruck\") on a Fresenius machine (machine number 13560) via the HMI. Authored by [Author 1], version 1.0, dated 2025-02-19.\n\n## Decisions\n- (none recorded)\n\n## Action items (with owner and due date where stated)\n- (none recorded)\n\n## Blockers and open questions\n- Login password for user `gronservice2` is not documented in the report; it is communicated separately (\"wird bekannt gegeben\").\n\n## Implementation detail (commits, files, line counts where present)\nActivation procedure (performed directly on the machine HMI):\n1. Connect a USB stick assigned drive letter `G:` to the machine HMI.\n2. Log in with user `gronservice2` and the separately communicated password.\n3. Navigate to path `Service \u2192 Bedientabeau \u2192 Inbetriebnahme`.\n4. Click button `Fernwartung`.\n5. Activate button `Display access level`.\n6. Activate button `Automatischer Bildschirmdruck`.\n7. Confirm activation via the status bar, which indicates that automatic screenshot capture is active.\n\nNo commits, files, or line counts are present in the source artifact.\n\n## Sources\n- CS-02_Automatic_Screenshot_report (support_report), v1.0, 2025-02-19, [Author 1]."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 1681,
+          "outputTokens": 344,
+          "totalTokens": 2025
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 1681,
+              "outputTokens": 344,
+              "totalTokens": 2025
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "256ff7a9-3196-4dee-a355-76a62b22011a",
+                "usage": {
+                  "inputTokens": 1681,
+                  "outputTokens": 344,
+                  "totalTokens": 2025
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 1,
+        "total_duration": 1.329921007156372,
+        "average_cycle_time": 1.329921007156372,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "eabeb84d-3cef-4698-9b24-ab10c3c88f27",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778158413.9884522,
+            "end_time": 1778158415.3183732,
+            "duration": 1.329921007156372,
+            "children": [
+              {
+                "id": "b50ed2ff-a7e5-4534-b6eb-1ef4a17fac7d",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "eabeb84d-3cef-4698-9b24-ab10c3c88f27",
+                "start_time": 1778158413.9885361,
+                "end_time": 1778158415.318315,
+                "duration": 1.3297789096832275,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 1092,
+          "outputTokens": 5,
+          "totalTokens": 1097
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 1092,
+              "outputTokens": 5,
+              "totalTokens": 1097
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "83ecc0a8-6404-4514-9357-c277468d8f34",
+                "usage": {
+                  "inputTokens": 1092,
+                  "outputTokens": 5,
+                  "totalTokens": 1097
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
