@@ -1,14 +1,20 @@
-# Architecture B — Agentic Workflow: Wiki Entry Generation
-# Multistep agentic prompt with self-reflection and citation injection.
+# Architecture B — Agentic Workflow: Writer agent prompt
+# CL-06 splits the Run-1 single-agent + self-reflection design into two
+# cooperating agents. This prompt drives the Writer; the Reviewer is
+# driven by `agentic_reviewer.yaml`. The runner cycles Writer ↔ Reviewer
+# until the Reviewer returns `NONE` (or until the max-iteration cap).
 #
 # v2 (thesis §4.2.3):
 #   - CL-03: user turn reordered so the source artifact precedes the task
-#     instruction. This makes the source the stable prefix the agent
-#     re-reads on every tool turn, enabling cache breakpoints (CL-05).
-#   - CL-04: concision directive added to the REVIEW step. Intermediate
-#     responses are capped at 150 words and required to be bullet-list
-#     only with the literal output `NONE` when no issues are found. The
-#     final wiki entry is intentionally unconstrained.
+#     instruction. The source becomes the stable prefix the Writer
+#     re-reads on every revision cycle, enabling cache breakpoints
+#     (CL-05).
+#   - CL-04: concision directive lives on the Reviewer prompt
+#     (`agentic_reviewer.yaml`) — only the Reviewer produces
+#     intermediate work, the Writer's output is the final wiki entry.
+#   - CL-06: Writer's responsibilities are reduced to draft + revise.
+#     The REVIEW step has been removed from the system prompt because
+#     the Reviewer sub-agent handles it.
 #   - CL-01: audience parameter and per-audience section schema. The
 #     {audience} and {audience_schema} placeholders are substituted at
 #     render time from `meta.audiences.<name>`. Audience defaults to
@@ -26,15 +32,15 @@ meta:
   id: agentic_generate_wiki
   architecture: agentic
   version: 2
-  model: anthropic/claude-sonnet-4-6 #  ollama_chat/gemma4:26b
+  model: anthropic/claude-sonnet-4-6 # ollama_chat/gemma4:26b
   sampling:
     temperature: 0.3
     max_tokens: 16384
   description: >
-    System prompt for the agentic workflow. The agent iterates over the
-    artifact, extracts facts, drafts a wiki entry tailored for the
-    requested audience, then self-reviews for completeness and
-    hallucinations before producing the final output.
+    Writer agent for the agentic Writer/Reviewer loop. Extracts facts
+    from the source artifact and produces a structured wiki entry
+    tailored for the requested audience. When the Reviewer returns
+    issues, the Writer revises the entry in-place and re-emits it.
   audiences:
     development:
       schema: |
@@ -240,26 +246,26 @@ meta:
 messages:
   - role: system
     content: |
-      You are a knowledge management agent for a software company.
-      You convert raw business artifacts into structured wiki entries
-      through a multi-step process:
+      You are the Writer agent in a Writer/Reviewer knowledge-management
+      workflow. You convert raw business artifacts into structured wiki
+      entries. A separate Reviewer agent re-reads the source against
+      your draft and returns either the literal `NONE` (the entry is
+      acceptable) or a bullet list of issues to fix.
 
+      Your responsibilities:
       1. EXTRACT — Read the artifact and identify every discrete fact
          (decisions, action items, deadlines, blockers, context).
       2. DRAFT — Produce a structured wiki entry with clear sections
          and citations back to the source.
-      3. REVIEW — Re-read the source artifact and check your draft for:
-         - Missing information (completeness)
-         - Unsupported claims (hallucinations)
-         - Correct attribution to participants
-      4. REVISE — Fix any issues found in the review step.
+      3. REVISE — When the Reviewer returns issues, address every item
+         and re-emit the full revised wiki entry.
 
-      Intermediate output format (REVIEW step and tool responses):
-      - Bullet list only; no preamble or restatement of the source.
-      - Hard cap of 150 words per response.
-      - Output exactly `NONE` when no issues are found.
-      This format applies only to intermediate work. The final wiki
-      entry produced by the REVISE step is unconstrained.
+      Output format:
+      - Each turn output exactly one wiki entry: the section schema
+        provided in the user message, and nothing else (no preamble,
+        no restatement of the source, no review notes, no commentary).
+      - When revising, re-emit the complete revised entry — the
+        Reviewer always sees the full draft, not a diff.
 
       Rules:
       - Attribute information using anonymized identifiers (e.g. [Person 1]).
