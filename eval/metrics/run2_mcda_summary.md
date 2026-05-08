@@ -9,7 +9,7 @@ Composite score per architecture is computed by aspiration-level Simple Additive
 | Architecture | Artifacts | KIP recall (n) | Mean latency (s) | Mean cost ($) | Mean time-on-task (s) | Claim support (factual / blocks) |
 | --- | --- | --- | --- | --- | --- | --- |
 | Pipeline (A) | 6 | 0.929 (n=6) | 19.80 | 0.0300 | 225.00 | 1.000 (0 / 26) |
-| Agentic (B) | 6 | 0.959 (n=5) | 28.73 | 0.0620 | 130.00 | 1.000 (0 / 23) |
+| Agentic (B) | 6 | 0.946 (n=6) | 28.73 | 0.0620 | 130.00 | 1.000 (0 / 23) |
 
 ## Per-session review record (architecture-resolved)
 
@@ -32,7 +32,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 
 | Architecture | Composite | Coverage | Excluded |
 | --- | --- | --- | --- |
-| Agentic (B) | 0.9242 | accuracy, verification_effort, completeness, speed, cost | (none) |
+| Agentic (B) | 0.9217 | accuracy, verification_effort, completeness, speed, cost | (none) |
 | Pipeline (A) | 0.8846 | accuracy, verification_effort, completeness, speed, cost | (none) |
 
 ### Agentic (B) --- per-criterion contribution (Default)
@@ -41,7 +41,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | accuracy | 1.0000 | 1.0000 | 0.30 | 0.3000 | 0.3000 | yes | pass |
 | verification_effort | 130.0000 | 0.7833 | 0.25 | 0.2500 | 0.1958 | yes | pass |
-| completeness | 0.9587 | 0.9587 | 0.20 | 0.2000 | 0.1917 | yes | n/a |
+| completeness | 0.9460 | 0.9460 | 0.20 | 0.2000 | 0.1892 | yes | n/a |
 | speed | 28.7267 | 0.9196 | 0.15 | 0.1500 | 0.1379 | yes | n/a |
 | cost | 0.0620 | 0.9874 | 0.10 | 0.1000 | 0.0987 | yes | n/a |
 
@@ -59,7 +59,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 
 | Architecture | Composite | Coverage | Excluded |
 | --- | --- | --- | --- |
-| Agentic (B) | 0.9298 | accuracy, verification_effort, completeness, speed, cost | (none) |
+| Agentic (B) | 0.9273 | accuracy, verification_effort, completeness, speed, cost | (none) |
 | Pipeline (A) | 0.9008 | accuracy, verification_effort, completeness, speed, cost | (none) |
 
 ### Agentic (B) --- per-criterion contribution (Equal)
@@ -68,7 +68,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | accuracy | 1.0000 | 1.0000 | 0.20 | 0.2000 | 0.2000 | yes | pass |
 | verification_effort | 130.0000 | 0.7833 | 0.20 | 0.2000 | 0.1567 | yes | pass |
-| completeness | 0.9587 | 0.9587 | 0.20 | 0.2000 | 0.1917 | yes | n/a |
+| completeness | 0.9460 | 0.9460 | 0.20 | 0.2000 | 0.1892 | yes | n/a |
 | speed | 28.7267 | 0.9196 | 0.20 | 0.2000 | 0.1839 | yes | n/a |
 | cost | 0.0620 | 0.9874 | 0.20 | 0.2000 | 0.1975 | yes | n/a |
 
@@ -86,7 +86,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 
 | Architecture | Composite | Coverage | Excluded |
 | --- | --- | --- | --- |
-| Agentic (B) | 0.9360 | accuracy, verification_effort, completeness, speed, cost | (none) |
+| Agentic (B) | 0.9334 | accuracy, verification_effort, completeness, speed, cost | (none) |
 | Pipeline (A) | 0.9170 | accuracy, verification_effort, completeness, speed, cost | (none) |
 
 ### Agentic (B) --- per-criterion contribution (Operational)
@@ -95,7 +95,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | accuracy | 1.0000 | 1.0000 | 0.15 | 0.1500 | 0.1500 | yes | pass |
 | verification_effort | 130.0000 | 0.7833 | 0.15 | 0.1500 | 0.1175 | yes | pass |
-| completeness | 0.9587 | 0.9587 | 0.20 | 0.2000 | 0.1917 | yes | n/a |
+| completeness | 0.9460 | 0.9460 | 0.20 | 0.2000 | 0.1892 | yes | n/a |
 | speed | 28.7267 | 0.9196 | 0.25 | 0.2500 | 0.2299 | yes | n/a |
 | cost | 0.0620 | 0.9874 | 0.25 | 0.2500 | 0.2469 | yes | n/a |
 
@@ -113,7 +113,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 
 | Architecture | Composite | Coverage | Excluded |
 | --- | --- | --- | --- |
-| Agentic (B) | 0.9221 | accuracy, verification_effort, completeness, speed, cost | (none) |
+| Agentic (B) | 0.9195 | accuracy, verification_effort, completeness, speed, cost | (none) |
 | Pipeline (A) | 0.8708 | accuracy, verification_effort, completeness, speed, cost | (none) |
 
 ### Agentic (B) --- per-criterion contribution (Quality)
@@ -122,7 +122,7 @@ Cohen's d = **4.21** (n_A=2, n_B=2, pooled SD = 22.56). Threshold |d| >= 0.5: **
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | accuracy | 1.0000 | 1.0000 | 0.40 | 0.4000 | 0.4000 | yes | pass |
 | verification_effort | 130.0000 | 0.7833 | 0.30 | 0.3000 | 0.2350 | yes | pass |
-| completeness | 0.9587 | 0.9587 | 0.20 | 0.2000 | 0.1917 | yes | n/a |
+| completeness | 0.9460 | 0.9460 | 0.20 | 0.2000 | 0.1892 | yes | n/a |
 | speed | 28.7267 | 0.9196 | 0.05 | 0.0500 | 0.0460 | yes | n/a |
 | cost | 0.0620 | 0.9874 | 0.05 | 0.0500 | 0.0494 | yes | n/a |
 
