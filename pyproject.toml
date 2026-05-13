@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
-    "litellm>=1.83.4",
+    "litellm>=1.83.10",
     "presidio-analyzer==2.2.362",
     "presidio-anonymizer>=2.2.361",
     "spacy>=3.8,<4",
     "en-core-web-lg>=3.8,<4",
     "jsonschema[format]>=4.23",
     "pyyaml>=6.0",
-    "python-dotenv>=1.0.1",
+    "python-dotenv>=1.2.2",
     "typer>=0.15,<0.16",
     "strands-agents[litellm]>=0.1",
 ]
