@@ -28,3 +28,16 @@ Each row is filled in as the change is implemented and its prompt YAML(s) bumped
 - **Done** — merged, prompt version bumped, before/after run captured.
 
 When all six rows reach **Done**, execute the Run 2 batch (12 comparable runs + 6 audience-showcase runs as defined in `docs/run2_plan.md`).
+
+## Refactors (non-DSR)
+
+Code-shape changes that touch neither prompts nor models nor evaluation
+methodology. Explicitly **not** numbered as CL-XX entries because they
+do not move any thesis-reported figure — the prompts, sampling, models,
+KIP scorer, MCDA, and per-run output bundle are unchanged. Recorded
+here only for audit-trail completeness and to flag the surface area
+the Phase-0 preparation introduces (see `docs/production_fork_plan.md`).
+
+| Date       | Scope                                                   | Summary |
+|------------|---------------------------------------------------------|---------|
+| 2026-05-18 | `src/common/contracts.py` + `src/{pipeline,agentic}/runner.py` | Introduce a canonical `SourceArtifact` / `GenerationResult` contract that both architectures route their core through (`generate(source) -> result`). The file-based `run_pipeline` / `run_agentic` orchestrators are thin wrappers that load anonymized artifacts, call `generate`, and persist outputs. Adds `result.json` (canonical contract) to each run directory; `metadata.json` is preserved key-for-key so MCDA, KIP scorer, and review_stats keep working without change. `run_id` is a UUIDv7 per RFC 9562 §5.7 (inline shim — stdlib `uuid.uuid7()` is Python 3.14+; this repo is pinned to 3.13 because of LiteLLM's uvloop incompatibility, BerriAI/litellm#26343). Source identifier follows OpenLineage's namespace+name convention as a single URI (`file:///data/anonymized/<filename>` for single, `bundle:///<comma-joined>` for multi). All 171 tests pass unchanged. Motivation in `docs/production_fork_plan.md` §"Phase 0". |

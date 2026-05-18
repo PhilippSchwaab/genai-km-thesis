@@ -8,9 +8,15 @@ the literal sentinel ``NONE`` (the entry is acceptable) or a bullet
 list of issues to fix. The runner cycles Writer → Reviewer → Writer
 until the Reviewer passes the draft or the max-iteration cap is hit.
 
-Each run produces a timestamped directory under ``eval/results/`` with
-the same shape as Architecture A so downstream evaluation can consume
-both architectures identically.
+The runner is structured around the canonical contract:
+
+    generate(source: SourceArtifact, ...) -> GenerationResult
+
+:func:`run_agentic` is the file-based orchestrator that loads anonymized
+artifacts from disk, wraps them as a :class:`SourceArtifact`, calls
+:func:`generate`, and writes the same per-run output bundle as
+Architecture A so downstream evaluation consumes both architectures
+identically. The legacy ``metadata.json`` shape is preserved key-for-key.
 
 Usage:
     from src.agentic.runner import run_agentic
@@ -24,11 +30,19 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from dotenv import load_dotenv
 
-from src.common.prompts import load_artifacts, load_prompt
+from src.common.contracts import (
+    Generation,
+    GenerationResult,
+    SourceArtifact,
+    file_source_uri,
+    new_run_id,
+    utc_now_iso,
+)
+from src.common.prompts import Prompt, load_artifacts, load_prompt
 
 load_dotenv()
 
@@ -121,13 +135,14 @@ def _split_for_strands(
         raise ValueError(
             "Rendered messages must end with a user turn (the live request)."
         )
+    # Pull the live user turn out first so ``user_message`` is bound
+    # unconditionally (avoids the "possibly referenced before assignment"
+    # static warning that fires when the loop owns this assignment).
+    user_message = rendered[-1]["content"]
     system_parts: list[str] = []
     history: list[dict] = []
-    last_idx = len(rendered) - 1
-    for i, msg in enumerate(rendered):
-        if i == last_idx:
-            user_message = msg["content"]
-        elif msg["role"] == "system":
+    for msg in rendered[:-1]:
+        if msg["role"] == "system":
             system_parts.append(msg["content"])
         else:
             # Wrap as Strands content-block list; required by the
@@ -210,10 +225,15 @@ def _make_cache_aware_litellm_model_class():
     so importing this module without ``strands`` installed still works.
     """
     from strands.models.litellm import LiteLLMModel
+    from strands.types.content import Messages
 
     class _CacheAwareLiteLLMModel(LiteLLMModel):
         @classmethod
-        def _format_regular_messages(cls, messages):
+        def _format_regular_messages(
+            cls,
+            messages: Messages,
+            **kwargs: Any,
+        ) -> list[dict[str, Any]]:
             # Pre-pass: strip cachePoint blocks; remember (out_msg_idx,
             # content_idx) tuples where cache_control should land in
             # the formatted output.
@@ -236,7 +256,16 @@ def _make_cache_aware_litellm_model_class():
                     cleaned.append({**msg, "content": kept})
                     out_idx += 1
 
-            formatted = super()._format_regular_messages(cleaned)
+            # ``cleaned`` is a list of message-shaped dicts (role +
+            # filtered content). The double cast (via ``object``)
+            # tells the analyzer the structure conforms to ``Messages``;
+            # ``dict`` and ``Message`` (a TypedDict) are not in the
+            # same inheritance hierarchy so a direct cast warns. The
+            # values come from ``messages`` (already ``Messages``-typed)
+            # so this is safe by construction.
+            formatted = super()._format_regular_messages(
+                cast(Messages, cast(object, cleaned)), **kwargs
+            )
 
             # Post-pass: stamp cache_control on the formatted blocks.
             for msg_idx, content_idx in cache_apply:
@@ -387,7 +416,7 @@ def _run_writer_reviewer_loop(
     reviewer_first_user_content_factory,
     *,
     max_iterations: int = _MAX_REVIEWER_ITERATIONS,
-) -> tuple[str, list[dict], int, int, bool]:
+) -> tuple[str, list[dict], int, int, bool, list[str], list[str]]:
     """Run the Writer/Reviewer cycle until the Reviewer passes the
     draft (returns ``NONE``) or the iteration cap is reached.
 
@@ -399,18 +428,25 @@ def _run_writer_reviewer_loop(
     the Reviewer's conversation history already contains the source.
 
     Returns ``(final_draft, per_agent_summaries, writer_calls,
-    reviewer_iterations, converged)``. ``per_agent_summaries`` is a
-    list of two ``EventLoopMetrics.get_summary()`` dicts (Writer's
-    final, then Reviewer's final). Strands' ``accumulated_usage``
-    accumulates across **all** calls of an agent, so the **final**
-    summary on each agent is its full lifetime total — summing
-    snapshots from every individual call would double-count.
-    ``writer_calls`` is the number of times the Writer was invoked
-    (1 = initial draft; >1 = initial + N revisions). ``reviewer_iterations``
-    is the number of Reviewer invocations (1 = first draft passed).
-    ``converged`` is True iff the Reviewer returned ``NONE`` before
-    the cap.
+    reviewer_iterations, converged, writer_errors, reviewer_errors)``.
+    ``per_agent_summaries`` is a list of two
+    ``EventLoopMetrics.get_summary()`` dicts (Writer's final, then
+    Reviewer's final). Strands' ``accumulated_usage`` accumulates
+    across **all** calls of an agent, so the **final** summary on each
+    agent is its full lifetime total — summing snapshots from every
+    individual call would double-count. ``writer_calls`` is the number
+    of times the Writer was invoked (1 = initial draft; >1 = initial +
+    N revisions). ``reviewer_iterations`` is the number of Reviewer
+    invocations (1 = first draft passed). ``converged`` is True iff
+    the Reviewer returned ``NONE`` before the cap.
+    ``writer_errors`` / ``reviewer_errors`` are the
+    ``MaxTokensReachedException`` messages collected per agent (empty
+    when the loop ran cleanly); they feed the §5.3 audit trail when a
+    run does not converge.
     """
+    writer_errors: list[str] = []
+    reviewer_errors: list[str] = []
+
     # 1) Writer: produce the initial draft.
     writer_result, writer_err = _safe_invoke_agent(writer_agent, writer_user_content)
     writer_calls = 1
@@ -418,13 +454,17 @@ def _run_writer_reviewer_loop(
         # The Writer's first call exhausted its max_tokens budget
         # before emitting any text. We have no draft to feed the
         # Reviewer, so abort the loop and surface the error message
-        # as the "draft" for downstream visibility.
+        # as the "draft" for downstream visibility while also recording
+        # it in ``writer_errors`` for ``metadata.json``.
+        writer_errors.append(writer_err or "MaxTokensReachedException")
         return (
             f"[ERROR] Writer hit max_tokens on its initial draft: {writer_err}",
             [],
             writer_calls,
             0,
             False,
+            writer_errors,
+            reviewer_errors,
         )
     draft = str(writer_result).strip()
 
@@ -453,10 +493,11 @@ def _run_writer_reviewer_loop(
             # Reviewer ran out of room (typically a reasoning-heavy
             # model whose chain-of-thought consumed the budget).
             # Treat as a non-pass: we couldn't verify the draft, so
-            # we don't claim convergence. Stop the loop — another
+            # we don't claim convergence. Record the error so it
+            # surfaces in metadata.json, then stop the loop — another
             # cycle would just hit the same limit.
-            feedback = (
-                f"[Reviewer max_tokens reached, no review emitted: {reviewer_err}]"
+            reviewer_errors.append(
+                reviewer_err or "MaxTokensReachedException"
             )
             break
         reviewer_result = new_reviewer_result
@@ -489,8 +530,9 @@ def _run_writer_reviewer_loop(
         if new_writer_result is None:
             # Writer's revision blew the budget. Keep the prior
             # (verified) draft; that is at least one the Reviewer has
-            # seen. Stop the loop because another revision would hit
-            # the same limit.
+            # seen. Record the error and stop the loop because another
+            # revision would hit the same limit.
+            writer_errors.append(writer_err or "MaxTokensReachedException")
             break
         writer_result = new_writer_result
         draft = str(writer_result).strip()
@@ -511,6 +553,8 @@ def _run_writer_reviewer_loop(
         writer_calls,
         reviewer_iterations,
         converged,
+        writer_errors,
+        reviewer_errors,
     )
 
 
@@ -575,50 +619,53 @@ def _estimate_cost(
         return 0.0
 
 
-# ── Runner ──────────────────────────────────────────────────────────────
+# ── Canonical generator ────────────────────────────────────────────────
 
-def run_agentic(
-    *artifact_filenames: str,
+
+def generate(
+    source: SourceArtifact,
+    *,
+    writer_prompt: Prompt | None = None,
+    reviewer_prompt: Prompt | None = None,
     prompt_id: str = "agentic_generate_wiki",
     reviewer_prompt_id: str = "agentic_reviewer",
-    audience: str = "development",
     temperature: float | None = None,
     max_tokens: int | None = None,
     top_p: float | None = None,
     top_k: int | None = None,
     max_iterations: int = _MAX_REVIEWER_ITERATIONS,
-    run_tag: str | None = None,
-) -> Path:
-    """Run Architecture B on one or more artifacts.
+    artifact_id: str | None = None,
+    artifact_type: str | None = None,
+) -> tuple[GenerationResult, list[dict[str, str]], dict]:
+    """Core Architecture B generation — :class:`SourceArtifact` in,
+    :class:`GenerationResult` out.
 
-    Sampling parameters are read from the prompt YAML by default.
-    CLI overrides take precedence when explicitly provided.
+    Returns ``(GenerationResult, rendered_messages, extras)``:
 
-    Args:
-        artifact_filenames: Filenames in data/anonymized/.
-        prompt_id: Writer prompt template to use.
-        reviewer_prompt_id: Reviewer prompt template to use (CL-06).
-        audience: Audience name to render the prompt for. Must match one
-                  of the audiences declared in the prompt YAML's
-                  ``meta.audiences`` block (CL-01, thesis §4.2.3).
-                  Defaults to ``development`` (Run-1 schema analog).
-        temperature: Override sampling temperature.
-        max_tokens: Override max response tokens.
-        top_p: Override nucleus sampling threshold.
-        top_k: Override top-k sampling.
-        max_iterations: Cap on Writer/Reviewer cycles (CL-06 safeguard).
-        run_tag: Optional tag appended to the run directory name.
+    - ``GenerationResult`` is the canonical contract (run_id, source,
+      wiki entry, lineage). For the agentic path,
+      ``generation.reviewer_iterations`` and ``generation.reviewer_passed``
+      capture the CL-06 loop outcome.
+    - ``rendered_messages`` are the Writer's pre-render LiteLLM-format
+      messages, returned so the orchestrator can persist them as
+      ``messages.json`` for reproducibility (deliberately *not* part
+      of the contract — full traces are sampled-only in production).
+    - ``extras`` carries CL-06-specific metadata that lives in the
+      legacy ``metadata.json`` but is not in the canonical contract
+      (writer call count, reviewer prompt id/version, full Strands
+      metrics blob). Callers writing the legacy file consume this.
 
-    Returns:
-        Path to the run output directory.
+    Pre-loaded ``writer_prompt`` / ``reviewer_prompt`` can be supplied
+    to avoid redundant YAML loads when the caller already has them.
     """
-    # ── 1. Load prompts and artifacts ───────────────────────────────
-    writer_prompt = load_prompt(prompt_id)
-    reviewer_prompt = load_prompt(reviewer_prompt_id)
-    bundle = load_artifacts(*artifact_filenames)
+    # ── 1. Load prompts ──────────────────────────────────────────────
+    if writer_prompt is None:
+        writer_prompt = load_prompt(prompt_id)
+    if reviewer_prompt is None:
+        reviewer_prompt = load_prompt(reviewer_prompt_id)
     model_id = writer_prompt.model
 
-    # Resolve sampling: CLI overrides > prompt YAML > hardcoded defaults
+    # Resolve sampling: caller overrides > prompt YAML > hardcoded defaults
     sampling = writer_prompt.sampling
     eff_temperature = temperature if temperature is not None else sampling.get("temperature", 0.3)
     eff_max_tokens = max_tokens if max_tokens is not None else int(sampling.get("max_tokens", 4096))
@@ -627,37 +674,34 @@ def run_agentic(
     if eff_top_k is not None:
         eff_top_k = int(eff_top_k)
 
+    # Default artifact_id from the URI's last path segment if not provided
+    if artifact_id is None:
+        artifact_id = source.source_uri.rstrip("/").rsplit("/", 1)[-1]
+    if artifact_type is None:
+        artifact_type = "personal_notes"  # safe fallback
+
     # Audience is forwarded to render() only when the prompt declares
     # an `audiences:` block; mirrors the pipeline runner contract so
     # both architectures resolve audience the same way.
     render_kwargs: dict[str, str] = {
-        "artifact_type": bundle.artifact_type,
-        "artifact_id": bundle.artifact_id,
-        "artifact_text": bundle.artifact_text,
+        "artifact_type": artifact_type,
+        "artifact_id": artifact_id,
+        "artifact_text": source.content,
     }
     if writer_prompt.audiences:
-        render_kwargs["audience"] = audience  # render() validates membership
-    elif audience != "development":
+        render_kwargs["audience"] = source.audience  # render() validates membership
+    elif source.audience != "development":
         raise ValueError(
-            f"Prompt {prompt_id!r} does not declare audiences; "
-            f"cannot run with audience={audience!r}."
+            f"Prompt {writer_prompt.id!r} does not declare audiences; "
+            f"cannot run with audience={source.audience!r}."
         )
 
     rendered = writer_prompt.render(**render_kwargs)
 
-    # Strands expects (system_prompt, history, live_user_message) split:
-    #   - system_prompt: concatenated system messages.
-    #   - history: every (user, assistant) turn before the live request
-    #              (CL-02 exemplar pairs).
-    #   - user_message: the final user turn (the live request).
+    # Strands expects (system_prompt, history, live_user_message) split.
     writer_system_text, writer_history, writer_user_message = _split_for_strands(rendered)
 
-    # CL-05 cache breakpoints. The system prompt and the source-artifact
-    # prefix of the live user are stable across all Writer revision
-    # turns; marking them with ``cachePoint`` lets every subsequent
-    # cycle hit Anthropic's prompt cache (~10x cheaper for repeated
-    # tokens). Strands translates ``cachePoint`` to ``cache_control:
-    # ephemeral`` on the preceding text block.
+    # CL-05 cache breakpoints.
     writer_system_prompt = _wrap_system_for_cache(writer_system_text)
     writer_user_content = _split_user_message_for_cache(writer_user_message)
 
@@ -672,8 +716,7 @@ def run_agentic(
         top_k=eff_top_k,
     )
 
-    # Reviewer uses its own YAML so the prompt is reviewable / testable
-    # independently of the Writer. Sampling resolution mirrors the Writer
+    # Reviewer uses its own YAML. Sampling resolution mirrors the Writer
     # (CLI override → YAML default), with one deliberate exception:
     # ``max_tokens`` is taken from the Reviewer YAML and is not
     # CLI-overridable — the Reviewer is intermediate work capped at 150
@@ -691,12 +734,8 @@ def run_agentic(
     if reviewer_top_k is not None:
         reviewer_top_k = int(reviewer_top_k)
 
-    reviewer_system_text = next(
-        m["content"] for m in reviewer_prompt._messages if m["role"] == "system"
-    )
-    reviewer_user_template = next(
-        m["content"] for m in reviewer_prompt._messages if m["role"] == "user"
-    )
+    reviewer_system_text = reviewer_prompt.system_text
+    reviewer_user_template = reviewer_prompt.user_template
 
     reviewer_agent = _create_agent(
         model_id=reviewer_prompt.model,
@@ -712,9 +751,9 @@ def run_agentic(
         """Render the Reviewer's first-turn user message and split it
         for caching at the source/draft boundary."""
         rendered_user = reviewer_user_template.format(
-            artifact_id=bundle.artifact_id,
-            artifact_type=bundle.artifact_type,
-            artifact_text=bundle.artifact_text,
+            artifact_id=artifact_id,
+            artifact_type=artifact_type,
+            artifact_text=source.content,
             draft=current_draft,
         )
         return _split_user_message_for_cache(
@@ -722,14 +761,16 @@ def run_agentic(
         )
 
     # ── 3. Run the Writer/Reviewer loop ─────────────────────────────
+    started_at = utc_now_iso()
     t0 = time.perf_counter()
-    call_ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
     (
         final_draft,
         per_agent_summaries,
         writer_calls,
         reviewer_iterations,
         reviewer_passed,
+        writer_errors,
+        reviewer_errors,
     ) = _run_writer_reviewer_loop(
         writer_agent,
         reviewer_agent,
@@ -737,7 +778,8 @@ def run_agentic(
         _reviewer_first_user_content,
         max_iterations=max_iterations,
     )
-    latency = time.perf_counter() - t0
+    latency = round(time.perf_counter() - t0, 2)
+    ended_at = utc_now_iso()
 
     # ── 4. Aggregate metrics ────────────────────────────────────────
     (
@@ -747,14 +789,9 @@ def run_agentic(
         cache_read_tokens,
         cache_write_tokens,
     ) = _accumulate_metrics(per_agent_summaries)
-    total_tokens = prompt_tokens + completion_tokens
 
-    # Strands doesn't track cost natively — estimate via litellm. CL-05
-    # passes the cache token fields so cost_per_token applies cache-read
-    # and cache-write rates separately from the standard input rate.
-    # Cost is computed per-agent (Writer at its model, Reviewer at its
-    # model) and summed, so a future refinement that makes the Reviewer
-    # a cheaper model is priced correctly without further changes.
+    # Per-agent cost so a future cheaper Reviewer model is priced
+    # correctly without further changes.
     agent_models = [model_id, reviewer_prompt.model]
     cost_usd = 0.0
     for summary, agent_model in zip(per_agent_summaries, agent_models):
@@ -767,7 +804,124 @@ def run_agentic(
             cache_write_tokens=usage.get("cacheWriteInputTokens", 0),
         )
 
-    # ── 5. Create run output directory ──────────────────────────────
+    # ── 5. Build the canonical GenerationResult ─────────────────────
+    wiki_text = _extract_wiki_entry(final_draft)
+    generation = Generation(
+        architecture="agentic",
+        prompt_id=writer_prompt.id,
+        prompt_version=writer_prompt.version,
+        model=model_id,
+        sampling={
+            "temperature": eff_temperature,
+            "max_tokens": eff_max_tokens,
+            "top_p": eff_top_p,
+            "top_k": eff_top_k,
+        },
+        tokens={
+            "input": prompt_tokens,
+            "output": completion_tokens,
+            "cache_read": cache_read_tokens,
+            "cache_creation": cache_write_tokens,
+        },
+        cost_usd=round(cost_usd, 6),
+        latency_seconds=latency,
+        started_at=started_at,
+        ended_at=ended_at,
+        reviewer_iterations=reviewer_iterations,
+        reviewer_passed=reviewer_passed,
+    )
+    gen_result = GenerationResult(
+        run_id=new_run_id(),
+        source_uri=source.source_uri,
+        source_content_hash=source.source_content_hash,
+        wiki_entry_markdown=wiki_text,
+        generation=generation,
+    )
+
+    # CL-06-specific extras that live in the legacy metadata.json but
+    # aren't part of the canonical contract.
+    extras = {
+        "writer_calls": writer_calls,
+        "max_iterations": max_iterations,
+        "reviewer_prompt_id": reviewer_prompt.id,
+        "reviewer_prompt_version": reviewer_prompt.version,
+        "writer_errors": writer_errors,
+        "reviewer_errors": reviewer_errors,
+        "strands_metrics": combined_metrics,
+    }
+    return gen_result, rendered, extras
+
+
+# ── File-based orchestrator ────────────────────────────────────────────
+
+def run_agentic(
+    *artifact_filenames: str,
+    prompt_id: str = "agentic_generate_wiki",
+    reviewer_prompt_id: str = "agentic_reviewer",
+    audience: str = "development",
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
+    max_iterations: int = _MAX_REVIEWER_ITERATIONS,
+    run_tag: str | None = None,
+) -> Path:
+    """File-based orchestrator for Architecture B.
+
+    Loads anonymized artifacts from ``data/anonymized/``, wraps them as
+    a :class:`SourceArtifact`, calls :func:`generate`, and writes the
+    full per-run output bundle to ``eval/results/<run_dir>/``:
+
+    - ``wiki_entry.md`` — the generated entry (primary evaluation output).
+    - ``metadata.json`` — legacy thesis-eval shape, preserved key-for-key.
+    - ``result.json`` — the canonical :class:`GenerationResult` contract.
+    - ``messages.json`` — raw messages sent to the LLM (reproducibility).
+
+    Sampling parameters default to the prompt YAML; CLI overrides take
+    precedence when explicitly provided.
+
+    Args:
+        artifact_filenames: Filenames in data/anonymized/.
+        prompt_id: Writer prompt template to use.
+        reviewer_prompt_id: Reviewer prompt template to use (CL-06).
+        audience: Audience name; must match the prompt YAML's ``meta.audiences``
+                  (CL-01, thesis §4.2.3).
+        temperature: Override sampling temperature.
+        max_tokens: Override max response tokens.
+        top_p: Override nucleus sampling threshold.
+        top_k: Override top-k sampling.
+        max_iterations: Cap on Writer/Reviewer cycles (CL-06 safeguard).
+        run_tag: Optional tag appended to the run directory name.
+
+    Returns:
+        Path to the run output directory.
+    """
+    # ── Load prompts + artifacts, wrap as SourceArtifact ────────────
+    writer_prompt = load_prompt(prompt_id)
+    reviewer_prompt = load_prompt(reviewer_prompt_id)
+    bundle = load_artifacts(*artifact_filenames)
+    source = SourceArtifact.from_text(
+        content=bundle.artifact_text,
+        source_uri=file_source_uri(list(artifact_filenames)),
+        audience=audience,
+    )
+
+    # ── Run the canonical generator ─────────────────────────────────
+    gen_result, rendered, extras = generate(
+        source,
+        writer_prompt=writer_prompt,
+        reviewer_prompt=reviewer_prompt,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        top_p=top_p,
+        top_k=top_k,
+        max_iterations=max_iterations,
+        artifact_id=bundle.artifact_id,
+        artifact_type=bundle.artifact_type,
+    )
+    gen = gen_result.generation
+
+    # ── Create run output directory ─────────────────────────────────
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     dir_name = f"agentic_{bundle.artifact_id}_{ts}"
     if run_tag:
@@ -775,43 +929,57 @@ def run_agentic(
     run_dir = _RESULTS_DIR / dir_name
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    # ── 6. Write outputs ────────────────────────────────────────────
-    wiki_text = _extract_wiki_entry(final_draft)
+    # ── Write outputs ───────────────────────────────────────────────
+    # Wiki entry (the primary output for evaluation)
+    (run_dir / "wiki_entry.md").write_text(
+        gen_result.wiki_entry_markdown, encoding="utf-8"
+    )
 
-    (run_dir / "wiki_entry.md").write_text(wiki_text, encoding="utf-8")
+    # Canonical contract (new — supplemental to metadata.json)
+    (run_dir / "result.json").write_text(
+        json.dumps(gen_result.to_dict(), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
+    # Legacy thesis-eval metadata shape — kept identical to pre-contract
+    # output so MCDA, KIP-scorer, and review_stats keep working without
+    # change. Aggregates derived from `gen` + `extras` so they stay in
+    # sync with the canonical contract.
+    total_tokens = gen.tokens["input"] + gen.tokens["output"]
     metadata = {
         "architecture": "agentic",
         "prompt_id": prompt_id,
-        "prompt_version": writer_prompt.version,
-        "reviewer_prompt_id": reviewer_prompt_id,
-        "reviewer_prompt_version": reviewer_prompt.version,
+        "prompt_version": gen.prompt_version,
+        "reviewer_prompt_id": extras["reviewer_prompt_id"],
+        "reviewer_prompt_version": extras["reviewer_prompt_version"],
         "audience": audience if writer_prompt.audiences else None,
-        "model": model_id,
+        "model": gen.model,
         "artifact_id": bundle.artifact_id,
         "artifact_type": bundle.artifact_type,
         "artifact_files": list(artifact_filenames),
-        "temperature": eff_temperature,
-        "max_tokens": eff_max_tokens,
-        "top_p": eff_top_p,
-        "top_k": eff_top_k,
-        "timestamp": call_ts,
+        "temperature": gen.sampling["temperature"],
+        "max_tokens": gen.sampling["max_tokens"],
+        "top_p": gen.sampling["top_p"],
+        "top_k": gen.sampling["top_k"],
+        "timestamp": gen.started_at,
         # CL-06: total LLM invocations across both agents. Writer is
         # invoked once for the initial draft plus once per revision;
         # Reviewer once per iteration of the loop.
-        "num_calls": writer_calls + reviewer_iterations,
-        "writer_calls": writer_calls,
-        "reviewer_iterations": reviewer_iterations,
-        "reviewer_passed": reviewer_passed,
-        "max_iterations": max_iterations,
-        "total_latency_seconds": round(latency, 2),
-        "total_cost_usd": round(cost_usd, 6),
+        "num_calls": extras["writer_calls"] + gen.reviewer_iterations,
+        "writer_calls": extras["writer_calls"],
+        "reviewer_iterations": gen.reviewer_iterations,
+        "reviewer_passed": gen.reviewer_passed,
+        "max_iterations": extras["max_iterations"],
+        "writer_errors": extras["writer_errors"],
+        "reviewer_errors": extras["reviewer_errors"],
+        "total_latency_seconds": gen.latency_seconds,
+        "total_cost_usd": gen.cost_usd,
         "total_tokens": total_tokens,
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens,
-        "cache_read_input_tokens": cache_read_tokens,
-        "cache_creation_input_tokens": cache_write_tokens,
-        "strands_metrics": combined_metrics,
+        "prompt_tokens": gen.tokens["input"],
+        "completion_tokens": gen.tokens["output"],
+        "cache_read_input_tokens": gen.tokens["cache_read"],
+        "cache_creation_input_tokens": gen.tokens["cache_creation"],
+        "strands_metrics": extras["strands_metrics"],
     }
     (run_dir / "metadata.json").write_text(
         json.dumps(metadata, indent=2), encoding="utf-8"

@@ -161,6 +161,37 @@ class Prompt:
         """Sorted list of declared audience names (empty if none)."""
         return sorted(self.audiences)
 
+    @property
+    def system_text(self) -> str:
+        """Raw text of the first system message in the template.
+
+        Public accessor for callers that build their own prompt content
+        outside of :meth:`render` (e.g. the agentic Reviewer sub-agent,
+        which formats its user template with a runtime ``draft`` kwarg
+        that ``render()`` does not know about). Raises ``ValueError``
+        if the prompt has no system message.
+        """
+        for m in self._messages:
+            if m["role"] == "system":
+                return m["content"]
+        raise ValueError(f"Prompt {self.id!r} has no system message.")
+
+    @property
+    def user_template(self) -> str:
+        """Raw text of the first user message in the template.
+
+        Public accessor for callers that need the user-turn template
+        verbatim (with ``{placeholders}`` intact) so they can
+        ``.format(...)`` it with their own kwargs. Used by the agentic
+        Reviewer sub-agent to render its user content for each turn
+        of the Writer/Reviewer loop. Raises ``ValueError`` if the
+        prompt has no user message.
+        """
+        for m in self._messages:
+            if m["role"] == "user":
+                return m["content"]
+        raise ValueError(f"Prompt {self.id!r} has no user message.")
+
 
 def load_prompt(prompt_id: str) -> Prompt:
     """Load a prompt by its id (filename without extension)."""
