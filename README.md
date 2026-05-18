@@ -32,17 +32,28 @@ Add your API key to `.env` (e.g. `MISTRAL_API_KEY=...`). See [LiteLLM providers]
 ```
 src/pipeline/     Architecture A — Structured Pipeline
 src/agentic/      Architecture B — Agentic Workflow (Strands Agents SDK)
-src/common/       Shared utilities (LLM client, PII redaction, prompt loader)
+src/common/       Shared utilities (LLM client, PII redaction, prompt loader, generator contract)
+src/common/schemas/   JSON Schemas for SourceArtifact / GenerationResult
 prompts/          Versioned prompt YAMLs (generation + evaluation)
 data/             raw → anonymized → KIPs (gold standard)
 eval/harness/     KIP scorer (LLM-as-judge) and MCDA math (aspiration SAW)
-eval/results/     Per-run raw outputs (wiki_entry.md, metadata.json, kip_eval.json)
+eval/results/     Per-run raw outputs (wiki_entry.md, metadata.json, result.json, kip_eval.json)
 eval/metrics/     Cross-run derived aggregates (run1_mcda_summary.md + run1_mcda.json)
 eval/run_mcda.py  MCDA orchestrator: per-architecture aggregation + gates + canonical Run-N report
 eval/review_stats.py  Library: review-UI loaders, ReviewData, Cohen's d
 eval/mcda_config.yaml 5 criteria + 4 sensitivity profiles per thesis §3.3.2
 docs/             Architecture docs, DSR changelog, future plans
 ```
+
+### Generator contract
+
+Both architectures route through `generate(source: SourceArtifact) -> GenerationResult`
+defined in `src/common/contracts.py`. Schemas live in `src/common/schemas/`
+(validated via `jsonschema`). Each run writes `result.json` (canonical contract)
+alongside the legacy `metadata.json` (preserved key-for-key for the eval scripts).
+`run_id` is a UUIDv7 (RFC 9562 §5.7); source identifiers use OpenLineage-style
+URIs (e.g. `file:///data/anonymized/<filename>`). Rationale and the production
+transfer path in `docs/production_fork_plan.md`.
 
 ## CLI
 

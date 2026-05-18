@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/PhilippSchwaab/genai-km-thesis/schemas/generation_result.schema.json",
+  "title": "GenerationResult",
+  "description": "Output of generate() — the wiki entry plus minimal lineage metadata about how it was produced. Persisted as result.json alongside the legacy metadata.json (which keeps its richer thesis-eval shape).",
+  "type": "object",
+  "required": ["run_id", "source", "wiki_entry_markdown", "generation"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv7 per RFC 9562 §5.7 — 48-bit Unix-ms timestamp + random bits. Time-sortable; safe for B-tree indexes."
+    },
+    "source": {
+      "type": "object",
+      "required": ["uri", "content_hash"],
+      "additionalProperties": false,
+      "properties": {
+        "uri": {"type": "string", "format": "uri"},
+        "content_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      },
+      "description": "Mirrors the SourceArtifact.source block so the result can stand alone (no need to cross-reference the input)."
+    },
+    "wiki_entry_markdown": {
+      "type": "string",
+      "description": "The generated wiki entry as a single markdown blob."
+    },
+    "generation": {
+      "type": "object",
+      "required": [
+        "architecture", "prompt_id", "prompt_version", "model",
+        "sampling", "tokens", "cost_usd", "latency_seconds",
+        "started_at", "ended_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string",
+          "enum": ["pipeline", "agentic"]
+        },
+        "prompt_id": {"type": "string"},
+        "prompt_version": {"type": "integer", "minimum": 1},
+        "model": {"type": "string"},
+        "sampling": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "temperature": {"type": ["number", "null"]},
+            "max_tokens": {"type": ["integer", "null"]},
+            "top_p": {"type": ["number", "null"]},
+            "top_k": {"type": ["integer", "null"]}
+          },
+          "description": "Effective sampling parameters (after CLI/YAML override resolution)."
+        },
+        "tokens": {
+          "type": "object",
+          "required": ["input", "output"],
+          "additionalProperties": false,
+          "properties": {
+            "input": {"type": "integer", "minimum": 0},
+            "output": {"type": "integer", "minimum": 0},
+            "cache_read": {"type": "integer", "minimum": 0},
+            "cache_creation": {"type": "integer", "minimum": 0}
+          },
+          "description": "Token usage. Cache fields are CL-05 — zero for pipeline / non-Anthropic models."
+        },
+        "cost_usd": {"type": "number", "minimum": 0},
+        "latency_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Wall-clock latency of the generation, measured with time.perf_counter() for monotonic precision (the ISO timestamps below are rounded to the second and not suitable for sub-second latency derivation)."
+        },
+        "started_at": {"type": "string", "format": "date-time"},
+        "ended_at": {"type": "string", "format": "date-time"},
+        "reviewer_iterations": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "CL-06 Writer/Reviewer cycles. 0 for pipeline (no review)."
+        },
+        "reviewer_passed": {
+          "type": ["boolean", "null"],
+          "description": "null for pipeline (no reviewer); true/false for agentic depending on whether the Reviewer returned NONE before the iteration cap."
+        }
+      }
+    }
+  }
+}

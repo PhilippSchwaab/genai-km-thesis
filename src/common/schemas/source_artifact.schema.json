@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/PhilippSchwaab/genai-km-thesis/schemas/source_artifact.schema.json",
+  "title": "SourceArtifact",
+  "description": "Input to generate() — one source (or bundle of sources concatenated for a single prompt invocation) plus the requested audience. Identifier convention follows OpenLineage's namespace + name scheme, expressed as a single URI.",
+  "type": "object",
+  "required": ["source", "content", "audience"],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["uri", "content_hash"],
+      "additionalProperties": false,
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Identifier for the source. Examples: file:///data/anonymized/CS-06.md (thesis single-file), bundle:///CS-06.md,CS-07.md (thesis multi-file), sharepoint://.../doc.docx (production)."
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "sha256 hex of the source content as fed to the LLM. Prefixed with 'sha256:' so the algorithm is self-describing."
+        }
+      }
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source content as fed to the LLM. For multi-file bundles, the concatenation that the prompt actually saw."
+    },
+    "audience": {
+      "type": "string",
+      "enum": ["marketing", "development", "architect"],
+      "description": "Target audience for the generated entry (CL-01, thesis §4.2.3). Must match one of the audiences declared in the prompt YAML."
+    }
+  }
+}
