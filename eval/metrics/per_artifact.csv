@@ -1,0 +1,25 @@
+arch_name,architecture,artifact_full,artifact_short,cost_usd,kip_recall,latency_seconds,reviewer_iterations,run,run_dir,total_tokens,writer_calls
+agentic,B,CS-01_Archive_Backup_report,CS-01,0.234276,1.0,106.72,,Run 1,agentic_CS-01_Archive_Backup_report_20260417T082952Z,43060,
+agentic,B,CS-02_Automatic_Screenshot_report,CS-02,0.054258,1.0,28.93,,Run 1,agentic_CS-02_Automatic_Screenshot_report_20260417T083203Z,8714,
+agentic,B,CS-03_Tip_Switch_Implementation_report,CS-03,0.243417,0.95,97.5,,Run 1,agentic_CS-03_Tip_Switch_Implementation_report_20260417T083428Z,43687,
+agentic,B,CS-04_Infrastructure_and_Deployment_compiled,CS-04,0.344433,0.9412,129.82,,Run 1,agentic_CS-04_Infrastructure_and_Deployment_compiled_20260417T083700Z,71015,
+agentic,B,CS-05_Error_Handling_and_Monitoring_compiled,CS-05,0.200508,0.9444,83.06,,Run 1,agentic_CS-05_Error_Handling_and_Monitoring_compiled_20260417T083845Z,37020,
+agentic,B,CS-06_Testing_Strategy_compiled,CS-06,0.188469,0.9545,80.56,,Run 1,agentic_CS-06_Testing_Strategy_compiled_20260417T075645Z,34327,
+pipeline,A,CS-01_Archive_Backup_report,CS-01,0.041832,1.0,32.12,,Run 1,pipeline_CS-01_Archive_Backup_report_20260417T081806Z,4900,
+pipeline,A,CS-02_Automatic_Screenshot_report,CS-02,0.009714,1.0,9.14,,Run 1,pipeline_CS-02_Automatic_Screenshot_report_20260417T081849Z,1118,
+pipeline,A,CS-03_Tip_Switch_Implementation_report,CS-03,0.04317,0.95,32.39,,Run 1,pipeline_CS-03_Tip_Switch_Implementation_report_20260417T082037Z,4846,
+pipeline,A,CS-04_Infrastructure_and_Deployment_compiled,CS-04,0.062403,0.9412,43.21,,Run 1,pipeline_CS-04_Infrastructure_and_Deployment_compiled_20260417T082203Z,9281,
+pipeline,A,CS-05_Error_Handling_and_Monitoring_compiled,CS-05,0.047874,1.0,28.73,,Run 1,pipeline_CS-05_Error_Handling_and_Monitoring_compiled_20260417T082259Z,4922,
+pipeline,A,CS-06_Testing_Strategy_compiled,CS-06,0.032874,0.9091,28.01,,Run 1,pipeline_CS-06_Testing_Strategy_compiled_20260417T074526Z,3930,
+agentic,B,CS-01_Archive_Backup_report,CS-01,0.098721,1.0,42.64,2,Run 2,run_2_agentic_CS-01_Archive_Backup_report_20260507T125553Z,23007,2
+agentic,B,CS-02_Automatic_Screenshot_report,CS-02,0.013554,1.0,7.27,1,Run 2,run_2_agentic_CS-02_Automatic_Screenshot_report_20260507T125335Z,3122,1
+agentic,B,CS-03_Tip_Switch_Implementation_report,CS-03,0.05131,0.95,29.5,1,Run 2,run_2_agentic_CS-03_Tip_Switch_Implementation_report_20260507T125155Z,9308,1
+agentic,B,CS-04_Infrastructure_and_Deployment_compiled,CS-04,0.095231,0.8824,40.04,1,Run 2,run_2_agentic_CS-04_Infrastructure_and_Deployment_compiled_20260507T123047Z,18786,1
+agentic,B,CS-05_Error_Handling_and_Monitoring_compiled,CS-05,0.040532,0.8889,21.16,1,Run 2,run_2_agentic_CS-05_Error_Handling_and_Monitoring_compiled_20260507T124639Z,7764,1
+agentic,B,CS-06_Testing_Strategy_compiled,CS-06,0.072436,0.9545,31.75,2,Run 2,run_2_agentic_CS-06_Testing_Strategy_compiled_20260507T124910Z,18156,2
+pipeline,A,CS-01_Archive_Backup_report,CS-01,0.030819,1.0,19.62,,Run 2,run_2_pipeline_CS-01_Archive_Backup_report_20260507T085039Z,4901,
+pipeline,A,CS-02_Automatic_Screenshot_report,CS-02,0.010266,1.0,7.25,,Run 2,run_2_pipeline_CS-02_Automatic_Screenshot_report_20260507T085950Z,1890,
+pipeline,A,CS-03_Tip_Switch_Implementation_report,CS-03,0.035757,0.95,22.51,,Run 2,run_2_pipeline_CS-03_Tip_Switch_Implementation_report_20260507T085735Z,5087,
+pipeline,A,CS-04_Infrastructure_and_Deployment_compiled,CS-04,0.053325,0.8824,34.73,,Run 2,run_2_pipeline_CS-04_Infrastructure_and_Deployment_compiled_20260507T085403Z,9411,
+pipeline,A,CS-05_Error_Handling_and_Monitoring_compiled,CS-05,0.026046,0.8333,20.52,,Run 2,run_2_pipeline_CS-05_Error_Handling_and_Monitoring_compiled_20260507T084726Z,4202,
+pipeline,A,CS-06_Testing_Strategy_compiled,CS-06,0.023601,0.9091,14.16,,Run 2,run_2_pipeline_CS-06_Testing_Strategy_compiled_20260507T084054Z,4047,

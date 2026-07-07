@@ -1,0 +1,49 @@
+order,artifact_id,unit_label,fact_id,fact_text,covered(Y/N),matched_kip_id,notes
+1,CS-01,p.4,,Zenon SCADA System erweitert mit Automatischem Backup nach unkontrollierter Beendigung,Y,KIP-001,
+2,CS-02,p.4,,"",,,
+3,CS-03,p.3,,"",,,
+4,CS-04,Change Summary,,"",,,
+5,CS-05,Files Changed,,Email Notifications new error reporting and logging,Y,KIP-004,
+6,CS-06,Commit Details,,E2E testing removed,Y,KIP-003,
+7,CS-01,p.7,,Instructions for Import des Anlagenmodells with 17 Steps,Y,KIP-007,Matches just steps listed as adding components in actual KIP
+8,CS-02,p.2,,Project has automatic screen print,Y,KIP-003,KIP is more descriptive and detailed but cover same detail of funtionality
+9,CS-03,p.6,,A machine is locked to a certain mode when tip switch is active,Y,KIP-004,
+10,CS-04,Commit Log (chronological),,README was added with developer documentation,Y,KIP-003,
+11,CS-05,preamble,,"",,,
+12,CS-06,Files Changed,,Integration tests where added for all core syncs,Y,KIP-009,
+13,CS-01,p.8,,The backup is triggered on states before and after Runtime shutdown,Y,KIP-002,
+14,CS-02,p.3,,"",,,Boilerplate
+15,CS-03,p.8,,"To change the picture use pop_Favorites, Basic_ButtonToggleFunctionTrigger and operation lock with LockMachineAutoMode",Y,KIP-007,Details more clear in KIP (better wording)
+16,CS-04,Files Changed,,Unit testing added and Kustomize implemented,Y,KIP-006,KIP Focused more on Kustomize
+17,CS-05,Commit Log (chronological),,SMTP Configured to use STARTTLS,Y,KIP-008,
+18,CS-06,Work Item Context,,Integration testing was added,Y,KIP-005,
+19,CS-01,p.5,,Das Se_StartBatchBackup Skript führt diese Funktionen aus [...] und die datein landen in ExportArx,Y,KIP-006,Matches however wording was chosen differently and some parts of fact shortened for brevity
+20,CS-02,p.1,,"",,,
+21,CS-03,p.9,,Die Maschinengeschwindigkeit kann angepast werden,Y,KIP-010,Kip also has details for limits
+22,CS-04,Work Item Context,,"",,,
+23,CS-05,Commit Details,,Changes to SyncORder Feedback and Others to Log errors instead of failing and send them via smtp,Y,KIP-001,
+24,CS-06,Pull Requests,,"",,,
+25,CS-01,p.9,,Der Chargename ist Rot hinterlegt und dies ist korrekt,Y,KIP-010,
+26,CS-02,p.5,,Für Automatischen bildschirmdruck muss ein USB-Stick mit passendem Laufwerkbuchstaben angeschlossen sein und die korrenten schritte befolgt werden,Y,KIP-001,KIP Specifies drive letter where fact extraction did not but core message matches
+27,CS-03,p.7,,Bild kann via Start Button und Operation Lock geändert werden,Y,KIP-008,KIP Calls it MAchine Input field rather than the literal Bild used in Fact
+28,CS-04,preamble,,"",,,
+29,CS-05,Work Item Context,,"",,,
+30,CS-06,Change Summary,,"",,,
+31,CS-01,p.3,,,,,
+32,CS-03,p.11,,,,,
+33,CS-04,Pull Requests,,,,,
+34,CS-05,Change Summary,,,,,
+35,CS-06,Commit Log (chronological),,Manual E2E Steps Documented,Y,KIP-004,
+36,CS-01,p.6,,,,,
+37,CS-03,p.5,,,,,
+38,CS-04,Commit Details,,Unit tests were added,Y,KIP-001,
+39,CS-05,Pull Requests,,Added Try Catch blocks to all errors and sent via SMTP,Y,KIP-009,
+40,CS-06,preamble,,,,,
+41,CS-01,p.1,,,,,
+42,CS-03,p.12,,,,,
+43,CS-01,p.2,,,,,
+44,CS-03,p.10,,,,,
+45,CS-03,p.4,,,,,
+46,CS-03,p.2,,,,,
+47,CS-03,p.13,,,,,
+48,CS-03,p.1,"","Gleicher Tippschalter für L6, L7 und L8",Y,KIP-009,

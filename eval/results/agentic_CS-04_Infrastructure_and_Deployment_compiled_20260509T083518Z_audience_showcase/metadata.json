@@ -1,0 +1,290 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "architect",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-04_Infrastructure_and_Deployment_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-04_Infrastructure_and_Deployment_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-09T08:34:11+00:00",
+  "num_calls": 4,
+  "writer_calls": 2,
+  "reviewer_iterations": 2,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 66.7,
+  "total_cost_usd": 0.099358,
+  "total_tokens": 37044,
+  "prompt_tokens": 34073,
+  "completion_tokens": 2971,
+  "cache_read_input_tokens": 20472,
+  "cache_creation_input_tokens": 10465,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 34073,
+      "outputTokens": 2971,
+      "totalTokens": 37044,
+      "cacheReadInputTokens": 20472,
+      "cacheWriteInputTokens": 10465
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 2,
+        "total_duration": 55.27271389961243,
+        "average_cycle_time": 27.636356949806213,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "94bd1e99-4c11-46a4-8fbf-9441a826e5ac",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315651.306089,
+            "end_time": 1778315683.916072,
+            "duration": 32.60998296737671,
+            "children": [
+              {
+                "id": "9d6758d1-3aa4-462e-85f6-2c119c217c81",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "94bd1e99-4c11-46a4-8fbf-9441a826e5ac",
+                "start_time": 1778315651.306201,
+                "end_time": 1778315683.916009,
+                "duration": 32.60980796813965,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nOver a ten-week period (2026-01-13 to 2026-03-23), [Developer 1] stabilised and productionised the LKVLogistic CLI deployment under work item AB#3151. The work encompassed: replacing placeholder/sample class names, introducing Kubernetes-native credential injection via Kustomize overlays, adding a comprehensive unit- and integration-test suite, hardening cronjob configuration, adding SFTP- and SMTP-based error-notification infrastructure, and producing developer documentation. Three PRs were merged across the period; 23 commits touched 99 files (2,729 insertions, 643 deletions).\n\n## Decisions (each paired with its driver and at least one alternative considered)\n- **Adopt Kustomize overlays for credential and environment management.** Driver: need to manage credentials cleanly across staging and production environments without committing secrets to version control. Alternative considered: the earlier approach of inline deployment-template YAML files with direct secret references (deprecated files removed in commit `6db7a94`; the Kustomize structure was introduced in `54f0b02`).\n- **Load credentials via Kubernetes Secrets rather than embedding them in deployment manifests.** Driver: secrets must not be stored in the repository; acceptance criteria for AB#3151 explicitly required stable, documented credential handling. Alternative considered: the prior `secrets.yaml` committed directly to the repository (superseded; `credentials-secret.yaml` was moved to `.gitignore` and replaced with a `.example` template in `fb7269b`).\n- **Remove the ACR pull secret from manifests and rely on cluster-level ACR integration.** Driver: simplify manifest maintenance; the cluster already handles registry authentication. Alternative considered: maintaining an explicit `acr-secret.yaml` and referencing it in `kustomization.yaml` (removed in `83f7507`).\n- **Switch `imagePullPolicy` to `IfNotPresent`.** Driver: avoid unnecessary image pulls in environments where the image is already present, reducing pipeline latency. Alternative considered: `Always` (the prior default, changed in `70f7117`).\n- **Make version-number replacement pipeline-specific rather than automated in manifests.** Driver: automated replacement in manifests was fragile (version number bug fixed in `0560803`); pipeline ownership makes the step explicit and auditable. Alternative considered: automated in-manifest version substitution (removed in `70f7117`).\n- **Add `backoffLimit` and `activeDeadlineSeconds` to cronjobs.** Driver: unbounded retries and no deadline create runaway job risk in Kubernetes. Alternative considered: relying on Kubernetes defaults (no explicit limits), which was the prior state before `20d9d37`.\n- **Use Testcontainers (SFTPGo) and Moq for integration tests.** Driver: integration tests require a real SFTP server; Testcontainers provides an ephemeral, reproducible instance without external infrastructure dependencies. Alternative considered: not recorded in the source; the prior state had no integration tests.\n- **Add SMTP error-notification support (opt-in via configuration).** Driver: silent failures in `CsvAuftragsRueckmeldung.cs` and `CsvBestandsmeldung.cs` were not surfaced to operators. Alternative considered: crashing on errors (prior behaviour, explicitly changed to non-crashing with notification in PR #352).\n\n## Consequences\n- Credentials are no longer committed to the repository; operators must provision `credentials-secret.yaml` from the `.example` template before deploying.\n- Kustomize overlays for both staging and production are now the canonical deployment path; the legacy flat deployment-template YAML files have been deleted.\n- The cluster must have ACR integration configured at the cluster level; the manifest no longer carries a fallback pull secret.\n- Cronjobs are bounded by `backoffLimit` and `activeDeadlineSeconds`; runaway retry loops are prevented but operators must tune these values if job runtimes change significantly.\n- 19 integration tests (PR #354) and a unit-test suite now cover core CSV processing and mapping logic, raising the bar for regression detection.\n- SMTP error notification is optional; deployments without SMTP configuration will continue to suppress (not crash on) feedback errors, which may delay operator awareness of data issues.\n- The Billbee API Client was bumped to 2.4.3 (commit `5f6cb6d`); downstream compatibility with that version is assumed but not explicitly validated in the source.\n\n## Open questions and risks\n- AB#3151 remains in **Active** state; it is not recorded as closed, so it is unclear whether all acceptance criteria (overview, stability, TODO fixes, sample-class renaming, developer docs) have been signed off.\n- SMTP error notification is opt-in; there is no recorded mechanism to alert operators that SMTP is unconfigured, meaning silent failure suppression could go unnoticed in production.\n- `backoffLimit` and `activeDeadlineSeconds` values are set but their specific values are not documented in the source; inappropriate values could cause jobs to be killed prematurely or retry excessively under load.\n- The staging environment maps to the same `lkv` namespace as production (commit `45507d5`); namespace collision risk between staging and production workloads is not addressed in the source.\n- No rollback procedure for the Kustomize-based deployment is documented in the source.\n\n## Sources\n- Development activity report: CS-04_Infrastructure_and_Deployment_compiled, work item AB#3151, 2026-01-13 to 2026-03-23 (23 commits, PRs #349, #352, #354)."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "b5278aae-6468-4c7a-b9f0-30122824cfc7",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315692.91875,
+            "end_time": 1778315715.581481,
+            "duration": 22.662730932235718,
+            "children": [
+              {
+                "id": "a7f1006b-f9cb-42e8-87d5-3abb82c04734",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "b5278aae-6468-4c7a-b9f0-30122824cfc7",
+                "start_time": 1778315692.919111,
+                "end_time": 1778315715.581433,
+                "duration": 22.66232204437256,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Summary\nOver a ten-week period (2026-01-13 to 2026-03-23), [Developer 1] stabilised and productionised the LKVLogistic CLI deployment under work item AB#3151. The work encompassed: replacing placeholder/sample class names, introducing Kubernetes-native credential injection via Kustomize overlays, adding a unit- and integration-test suite, hardening cronjob configuration, adding SFTP- and SMTP-based error-notification infrastructure, and producing developer documentation. Three PRs were opened across the period; PR #349 and PR #352 completed within the period (2026-03-05 and 2026-03-10 respectively), while PR #354 was created on 2026-03-23 but completed on 2026-04-07, outside the stated period. The commit log table lists 22 commits; one additional commit (`5f6cb6d`, Billbee API Client bump, 2026-03-23) appears only in the Commit Details section, bringing the source-stated total to 23.\n\n## Decisions (each paired with its driver and at least one alternative considered)\n- **Adopt Kustomize overlays for credential and environment management.** Driver: need to manage credentials and environment differences across staging and production. Alternative considered: the earlier flat deployment-template YAML files, which were deprecated and removed (commit `6db7a94`; Kustomize structure introduced in `54f0b02`).\n- **Load credentials via Kubernetes Secrets and exclude the credentials file from version control.** Driver: credentials must not be stored in the repository. Alternative considered: the prior `secrets.yaml` / `credentials-secret.yaml` committed directly to the repository; superseded by moving the file to `.gitignore` and providing a `.example` template (commit `fb7269b`).\n- **Remove the ACR pull secret from manifests and rely on cluster-level ACR handling.** Driver: the cluster already handles registry authentication. Alternative considered: maintaining an explicit `acr-secret.yaml` referenced in `kustomization.yaml` (removed in commit `83f7507`).\n- **Switch `imagePullPolicy` to `IfNotPresent`.** Driver: not stated explicitly in the source. Alternative considered: the prior setting (changed in commit `70f7117`).\n- **Make version-number replacement pipeline-specific rather than automated in manifests.** Driver: a version number bug existed in `azure-pipelines.yml` (fixed in commit `0560803`). Alternative considered: automated in-manifest version substitution (removed in commit `70f7117`).\n- **Add `backoffLimit` and `activeDeadlineSeconds` to cronjobs.** Driver: not stated explicitly in the source. Alternative considered: the prior state with no explicit limits (changed in commit `20d9d37`).\n- **Use Testcontainers (SFTPGo) and Moq for integration tests.** Driver: integration tests require an SFTP server; Testcontainers provides an ephemeral instance. Alternative considered: not recorded in the source; the prior state had no integration tests (PR #354).\n- **Add SMTP error-notification support (opt-in via configuration) and suppress rather than crash on feedback errors.** Driver: `CsvAuftragsRueckmeldung.cs` and `CsvBestandsmeldung.cs` previously crashed on errors. Alternative considered: crashing on errors (prior behaviour, explicitly changed in PR #352).\n- **Bump Billbee API Client to 2.4.3.** Driver: not stated explicitly in the source. Alternative considered: not recorded in the source (commit `5f6cb6d`, 2026-03-23).\n\n## Consequences\n- Credentials are no longer committed to the repository; operators must provision `credentials-secret.yaml` from the `.example` template before deploying.\n- Kustomize overlays for both staging and production are now the canonical deployment path; the legacy flat deployment-template YAML files have been deleted.\n- The cluster must have ACR integration configured at the cluster level; the manifest no longer carries a fallback pull secret.\n- Cronjobs now carry explicit `backoffLimit` and `activeDeadlineSeconds` values.\n- 19 integration tests (PR #354) and a unit-test suite now cover core CSV processing and mapping logic.\n- SMTP error notification is optional; deployments without SMTP configuration will suppress (not crash on) feedback errors.\n- The Billbee API Client was bumped to 2.4.3 (commit `5f6cb6d`).\n\n## Open questions and risks\n- AB#3151 remains in **Active** state; it is not recorded as closed in the source.\n- PR #354 completed on 2026-04-07, outside the stated artifact period; its integration-test changes are not fully reflected in the period's commit log.\n- The commit log table lists 22 commits against a source-stated total of 23; the discrepancy is not explained in the source.\n- SMTP error notification is opt-in; there is no recorded mechanism to alert operators that SMTP is unconfigured, meaning error suppression could go unnoticed.\n- The staging environment maps to the same `lkv` namespace as production (commit `45507d5`); potential namespace collision between staging and production workloads is not addressed in the source.\n- No rollback procedure for the Kustomize-based deployment is documented in the source.\n\n## Sources\n- Development activity report: CS-04_Infrastructure_and_Deployment_compiled, work item AB#3151, 2026-01-13 to 2026-03-23 (source-stated 23 commits, PRs #349, #352, #354)."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 16650,
+          "outputTokens": 2635,
+          "totalTokens": 19285,
+          "cacheWriteInputTokens": 8792,
+          "cacheReadInputTokens": 7426
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 7488,
+              "outputTokens": 1307,
+              "totalTokens": 8795,
+              "cacheWriteInputTokens": 7426
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "e71d8495-cdeb-4e08-99c7-78157e1b9ed8",
+                "usage": {
+                  "inputTokens": 7488,
+                  "outputTokens": 1307,
+                  "totalTokens": 8795,
+                  "cacheWriteInputTokens": 7426
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 9162,
+              "outputTokens": 1328,
+              "totalTokens": 10490,
+              "cacheReadInputTokens": 7426,
+              "cacheWriteInputTokens": 1366
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "e1de000a-d86f-4537-9a5c-45a089b40ef2",
+                "usage": {
+                  "inputTokens": 9162,
+                  "outputTokens": 1328,
+                  "totalTokens": 10490,
+                  "cacheReadInputTokens": 7426,
+                  "cacheWriteInputTokens": 1366
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 2,
+        "total_duration": 11.417990922927856,
+        "average_cycle_time": 5.708995461463928,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "6ffbb852-322b-4181-ad11-7fcb5c9f5721",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315683.918219,
+            "end_time": 1778315692.9165041,
+            "duration": 8.998285055160522,
+            "children": [
+              {
+                "id": "7319151e-81db-4fe8-8772-0cef43f8882b",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "6ffbb852-322b-4181-ad11-7fcb5c9f5721",
+                "start_time": 1778315683.918428,
+                "end_time": 1778315692.9164429,
+                "duration": 8.9980149269104,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "- PR #354 completion date is 2026-04-07 in the source, but the draft states \"Three PRs were merged across the period\" implying all three closed within the 2026-01-13 to 2026-03-23 window; PR #354 was not completed until 2026-04-07, outside the stated period.\n- The draft omits commit `5f6cb6d` (Bump Billbee API Client to 2.4.3, 2026-03-23) from the narrative decisions/actions sections; it only appears briefly in Consequences without noting it is the 23rd commit and falls within the period.\n- The source total commit count is 23, but only 22 commits appear in the commit log table; `5f6cb6d` is listed only in Commit Details. The draft repeats \"23 commits\" without flagging this discrepancy \u2014 not a draft error per se, but the draft should not assert 23 if the log table shows 22.\n- The draft's Decisions section invents \"alternatives considered\" framing and specific reasoning (e.g., \"reducing pipeline latency,\" \"runaway job risk\") that are not grounded in the source artifact, constituting hallucinations.\n- Work item state is \"Active\" \u2014 the draft correctly notes this, but also claims acceptance criteria \"explicitly required stable, documented credential handling,\" which is an interpretive embellishment not stated in the source."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "d90dfefa-fe24-498a-9d4f-5e5e902fda68",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315715.5836742,
+            "end_time": 1778315718.00338,
+            "duration": 2.419705867767334,
+            "children": [
+              {
+                "id": "37b4f7f6-aee6-4c93-9e79-20fcac0174be",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "d90dfefa-fe24-498a-9d4f-5e5e902fda68",
+                "start_time": 1778315715.584002,
+                "end_time": 1778315718.003341,
+                "duration": 2.4193389415740967,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 17423,
+          "outputTokens": 336,
+          "totalTokens": 17759,
+          "cacheReadInputTokens": 13046,
+          "cacheWriteInputTokens": 1673
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 7868,
+              "outputTokens": 331,
+              "totalTokens": 8199,
+              "cacheReadInputTokens": 6523
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "416f0d30-89b2-4865-944c-2fc083f19182",
+                "usage": {
+                  "inputTokens": 7868,
+                  "outputTokens": 331,
+                  "totalTokens": 8199,
+                  "cacheReadInputTokens": 6523
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 9555,
+              "outputTokens": 5,
+              "totalTokens": 9560,
+              "cacheReadInputTokens": 6523,
+              "cacheWriteInputTokens": 1673
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "eb717da3-0164-43e3-a10e-caa2b62bfbd6",
+                "usage": {
+                  "inputTokens": 9555,
+                  "outputTokens": 5,
+                  "totalTokens": 9560,
+                  "cacheReadInputTokens": 6523,
+                  "cacheWriteInputTokens": 1673
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

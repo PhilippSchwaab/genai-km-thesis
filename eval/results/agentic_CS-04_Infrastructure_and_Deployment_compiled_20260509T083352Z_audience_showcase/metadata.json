@@ -1,0 +1,290 @@
+{
+  "architecture": "agentic",
+  "prompt_id": "agentic_generate_wiki",
+  "prompt_version": 2,
+  "reviewer_prompt_id": "agentic_reviewer",
+  "reviewer_prompt_version": 2,
+  "audience": "marketing",
+  "model": "anthropic/claude-sonnet-4-6",
+  "artifact_id": "CS-04_Infrastructure_and_Deployment_compiled",
+  "artifact_type": "development_activity",
+  "artifact_files": [
+    "CS-04_Infrastructure_and_Deployment_compiled.md"
+  ],
+  "temperature": 0.3,
+  "max_tokens": 16384,
+  "top_p": null,
+  "top_k": null,
+  "timestamp": "2026-05-09T08:33:28+00:00",
+  "num_calls": 4,
+  "writer_calls": 2,
+  "reviewer_iterations": 2,
+  "reviewer_passed": true,
+  "max_iterations": 3,
+  "total_latency_seconds": 23.72,
+  "total_cost_usd": 0.080057,
+  "total_tokens": 31222,
+  "prompt_tokens": 30153,
+  "completion_tokens": 1069,
+  "cache_read_input_tokens": 13946,
+  "cache_creation_input_tokens": 14956,
+  "strands_metrics": {
+    "accumulated_usage": {
+      "inputTokens": 30153,
+      "outputTokens": 1069,
+      "totalTokens": 31222,
+      "cacheReadInputTokens": 13946,
+      "cacheWriteInputTokens": 14956
+    },
+    "per_agent_summaries": [
+      {
+        "total_cycles": 2,
+        "total_duration": 14.161633968353271,
+        "average_cycle_time": 7.080816984176636,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "4de84a5b-ee0d-4985-b1f3-17a3d1c81d67",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315608.926465,
+            "end_time": 1778315616.638636,
+            "duration": 7.7121710777282715,
+            "children": [
+              {
+                "id": "2a5831d3-9d1a-46e8-84ba-f26df9d2c832",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "4de84a5b-ee0d-4985-b1f3-17a3d1c81d67",
+                "start_time": 1778315608.926574,
+                "end_time": 1778315616.638588,
+                "duration": 7.7120139598846436,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Outcome (one paragraph: what was achieved, in plain language)\nBetween January and March 2026, the team significantly strengthened the reliability, security, and testability of the logistics integration service. Credential handling was secured and removed from version control, deployment configuration was modernised using Kustomize to support both staging and production environments on Kubernetes, error handling was improved so that processing failures no longer crash the service, email notifications were added to alert on errors, and a comprehensive automated test suite (including 19 integration tests) was introduced to verify correct behaviour going forward.\n\n## Stakeholders involved (anonymized identifiers)\n- [Developer 1] (sole author across all 23 commits and three pull requests)\n\n## Business impact (only if explicitly stated in the source)\n- (none recorded in source)\n\n## Status and next milestone\n- Status: Work item AB#3151 is active as of the period covered (2026-01-13 to 2026-03-23); PR #354 completed 2026-04-07.\n- Next milestone: (not recorded in source)\n\n## Sources\n- Development activity report: CS-04\\_Infrastructure\\_and\\_Deployment\\_compiled, covering 2026-01-13 to 2026-03-23 (work item AB#3151, 23 commits, PRs #349, #352, #354)."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "6bfe6d40-e4ea-494c-8912-6d1fe0f14ba3",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315624.929893,
+            "end_time": 1778315631.379356,
+            "duration": 6.449462890625,
+            "children": [
+              {
+                "id": "86bd493f-c2fa-44e7-b6e8-5853112f26a6",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "6bfe6d40-e4ea-494c-8912-6d1fe0f14ba3",
+                "start_time": 1778315624.930217,
+                "end_time": 1778315631.379312,
+                "duration": 6.449095010757446,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "## Outcome (one paragraph: what was achieved, in plain language)\nBetween January and March 2026, the team significantly strengthened the reliability, security, and testability of the logistics integration service. Acceptance criteria for work item AB#3151 included producing a solution overview, enhancing implementation stability, fixing outstanding TODOs, renaming placeholder \"Sample\" classes, and establishing developer documentation \u2014 all addressed across the period. Credential handling was secured and removed from version control, deployment configuration was modernised using Kustomize to support both staging and production environments on Kubernetes, error handling was improved so that processing failures no longer crash the service, and email notifications were added to alert on errors. A comprehensive automated test suite (including 19 integration tests) was introduced to verify correct behaviour going forward. The placeholder class `SampleOptions.cs` was renamed to `GlobalOptions.cs`, directly fulfilling the \"Sample\" class acceptance criterion. The Billbee API Client dependency was also bumped to version 2.4.3 (commit `5f6cb6d`, 2026-03-23).\n\n## Stakeholders involved (anonymized identifiers)\n- [Developer 1] (sole author across all 23 commits and three pull requests: PR #349, PR #352, PR #354)\n\n## Business impact (only if explicitly stated in the source)\n- (none recorded in source)\n\n## Status and next milestone\n- Status: Work item AB#3151 is active as of the artifact period (2026-01-13 to 2026-03-23). PR #349 and PR #352 were completed within the period; PR #354 was created on 2026-03-23 but completed on 2026-04-07, which falls outside the artifact's stated period.\n- Next milestone: (not recorded in source)\n\n## Sources\n- Development activity report: CS-04\\_Infrastructure\\_and\\_Deployment\\_compiled, covering 2026-01-13 to 2026-03-23 (work item AB#3151, 23 commits, PRs #349, #352, #354)."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 15632,
+          "outputTokens": 779,
+          "totalTokens": 16411,
+          "cacheWriteInputTokens": 7806,
+          "cacheReadInputTokens": 7423
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 7502,
+              "outputTokens": 307,
+              "totalTokens": 7809,
+              "cacheWriteInputTokens": 7423
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "7e5c9c83-a267-4d65-b3ab-aa58b4e5a53a",
+                "usage": {
+                  "inputTokens": 7502,
+                  "outputTokens": 307,
+                  "totalTokens": 7809,
+                  "cacheWriteInputTokens": 7423
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 8130,
+              "outputTokens": 472,
+              "totalTokens": 8602,
+              "cacheReadInputTokens": 7423,
+              "cacheWriteInputTokens": 383
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "0d18eb30-9705-4173-b4b5-b01ecc613c50",
+                "usage": {
+                  "inputTokens": 8130,
+                  "outputTokens": 472,
+                  "totalTokens": 8602,
+                  "cacheReadInputTokens": 7423,
+                  "cacheWriteInputTokens": 383
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "total_cycles": 2,
+        "total_duration": 9.544746398925781,
+        "average_cycle_time": 4.772373199462891,
+        "tool_usage": {},
+        "traces": [
+          {
+            "id": "07e02f38-0480-45d8-8c98-420122d777d6",
+            "name": "Cycle 1",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315616.640521,
+            "end_time": 1778315624.927575,
+            "duration": 8.287054061889648,
+            "children": [
+              {
+                "id": "d364735f-d230-421f-9130-c0c90b743780",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "07e02f38-0480-45d8-8c98-420122d777d6",
+                "start_time": 1778315616.6407008,
+                "end_time": 1778315624.927509,
+                "duration": 8.286808252334595,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "- The draft omits the Billbee API Client bump to version 2.4.3 (commit `5f6cb6d`, 2026-03-23), which is a concrete deliverable in the source.\n- The draft omits the acceptance criteria for AB#3151 (overview of solution, stability enhancement, fixing TODOs, renaming \"Sample\" classes, developer docs), which are explicitly stated in the work item description.\n- The draft omits that `SampleOptions.cs` was renamed to `GlobalOptions.cs` (visible in commit `af524da` file list), directly addressing the \"Sample\" class acceptance criterion.\n- The draft omits that PR #349's merge strategy was rebase and that PR #354 completed on 2026-04-07 (outside the stated period), which could mislead readers about the period boundary \u2014 the Sources section mentions PR #354 completion but the Status section should clarify it falls outside the artifact's period.\n- The draft states the total commit count is 23, but the commit log lists 23 entries including `5f6cb6d`; the Change Summary shows 23 per-commit entries \u2014 this is consistent, but the draft should not silently drop the Billbee bump commit from the narrative."
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          },
+          {
+            "id": "bc1c7534-99c1-48b5-a892-463ff57edbcf",
+            "name": "Cycle 2",
+            "raw_name": null,
+            "parent_id": null,
+            "start_time": 1778315631.3815198,
+            "end_time": 1778315632.6392121,
+            "duration": 1.2576923370361328,
+            "children": [
+              {
+                "id": "a7da98f3-9bc6-4415-8e4f-ba3976ada9c4",
+                "name": "stream_messages",
+                "raw_name": null,
+                "parent_id": "bc1c7534-99c1-48b5-a892-463ff57edbcf",
+                "start_time": 1778315631.381789,
+                "end_time": 1778315632.639165,
+                "duration": 1.257375955581665,
+                "children": [],
+                "metadata": {},
+                "message": {
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "text": "NONE"
+                    }
+                  ]
+                }
+              }
+            ],
+            "metadata": {},
+            "message": null
+          }
+        ],
+        "accumulated_usage": {
+          "inputTokens": 14521,
+          "outputTokens": 290,
+          "totalTokens": 14811,
+          "cacheWriteInputTokens": 7150,
+          "cacheReadInputTokens": 6523
+        },
+        "accumulated_metrics": {
+          "latencyMs": 0
+        },
+        "agent_invocations": [
+          {
+            "usage": {
+              "inputTokens": 6868,
+              "outputTokens": 285,
+              "totalTokens": 7153,
+              "cacheWriteInputTokens": 6523
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "b845a09a-8a9b-4eb9-8d8f-b14ada8d8390",
+                "usage": {
+                  "inputTokens": 6868,
+                  "outputTokens": 285,
+                  "totalTokens": 7153,
+                  "cacheWriteInputTokens": 6523
+                }
+              }
+            ]
+          },
+          {
+            "usage": {
+              "inputTokens": 7653,
+              "outputTokens": 5,
+              "totalTokens": 7658,
+              "cacheReadInputTokens": 6523,
+              "cacheWriteInputTokens": 627
+            },
+            "cycles": [
+              {
+                "event_loop_cycle_id": "a78cd624-43d0-45b2-b21a-213a500d11ce",
+                "usage": {
+                  "inputTokens": 7653,
+                  "outputTokens": 5,
+                  "totalTokens": 7658,
+                  "cacheReadInputTokens": 6523,
+                  "cacheWriteInputTokens": 627
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -69,6 +69,16 @@ criteria:
 # (thesis §3.3.2, Table tab:sensitivity-profiles).
 sensitivity_profiles:
 
+  # Normalized Borda scores of the raw Mentimeter ranking data
+  # (thesis Appendix "Stakeholder Survey: Raw Criteria Ranking Data").
+  # Preserves the Accuracy/Verification Effort tie of the survey.
+  survey_derived:
+    accuracy: 0.30
+    verification_effort: 0.30
+    completeness: 0.18
+    speed: 0.15
+    cost: 0.07
+
   equal:
     accuracy: 0.20
     verification_effort: 0.20

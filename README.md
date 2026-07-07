@@ -2,7 +2,7 @@
 
 **System Designs for GenAI-Based Knowledge Capture in SME Business Processes**
 
-Master's thesis comparing two LLM-driven architectures — a structured pipeline (Architecture A) and an agentic workflow (Architecture B) — for automatically converting unstructured business artifacts into structured wiki entries.
+Master's thesis comparing two LLM-driven architectures — a structured pipeline (Architecture A) and an agentic workflow (Architecture B) — for automatically converting weakly structured business artifacts into structured wiki entries.
 
 **Author:** Philipp Julian Schwaab | **Advisor:** Dorian Achim Prill | **Company:** Meshmakers GmbH
 
@@ -35,13 +35,16 @@ src/agentic/      Architecture B — Agentic Workflow (Strands Agents SDK)
 src/common/       Shared utilities (LLM client, PII redaction, prompt loader, generator contract)
 src/common/schemas/   JSON Schemas for SourceArtifact / GenerationResult
 prompts/          Versioned prompt YAMLs (generation + evaluation)
-data/             raw → anonymized → KIPs (gold standard)
+data/             raw → anonymized → KIPs (reference baseline)
 eval/harness/     KIP scorer (LLM-as-judge) and MCDA math (aspiration SAW)
 eval/results/     Per-run raw outputs (wiki_entry.md, metadata.json, result.json, kip_eval.json)
-eval/metrics/     Cross-run derived aggregates (run1_mcda_summary.md + run1_mcda.json)
+eval/metrics/     Cross-run derived aggregates (run{1,2}_mcda_summary.md + .json)
 eval/run_mcda.py  MCDA orchestrator: per-architecture aggregation + gates + canonical Run-N report
 eval/review_stats.py  Library: review-UI loaders, ReviewData, Cohen's d
-eval/mcda_config.yaml 5 criteria + 4 sensitivity profiles per thesis §3.3.2
+eval/mcda_config.yaml 5 criteria + 5 sensitivity profiles per thesis §3.3.2
+eval/sensitivity_boundaries.py   Weight break-even + aspiration boundary analysis (thesis §5.2)
+eval/kip_coverage_audit.py       Blind re-extraction audit of the KIP baseline (worksheet: eval/coverage_audit/)
+eval/kip_agreement_audit.py      KIP correctness + judge-agreement audit (worksheet: eval/agreement_audit/)
 docs/             Architecture docs, DSR changelog, future plans
 ```
 
