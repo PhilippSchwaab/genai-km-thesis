@@ -22,7 +22,7 @@ This definition is informed by the atomic fact decomposition approach used in FA
 
 Each KIP is assigned exactly one category. Categories are tailored to the artifact types in the Control Set (development compilations and support/professional services reports).
 
-### Categories for Development Compilations (Type 2)
+### Unified category taxonomy (both artifact types)
 
 | Code | Category | Definition | Example |
 |------|----------|------------|---------|
@@ -32,19 +32,10 @@ Each KIP is assigned exactly one category. Categories are tailored to the artifa
 | RAT | **Rationale** | An explanation of *why* something was done, especially when not self-evident from the action alone | "Removed E2E tests because they were replaced by integration tests" |
 | CFG | **Configuration / Infrastructure** | Changes to deployment, CI/CD, environment setup, or operational parameters | "Added backoffLimit and activeDeadlineSeconds to Kubernetes CronJob definitions" |
 | DEP | **Dependency Change** | Addition, removal, or version change of external libraries or services | "Bumped Billbee API Client to version 2.4.3" |
+| TEC | **Technical Detail** | Specific technical facts relevant to understanding the work or resolution | "The automatic screenshot function requires a USB drive with drive letter G:" |
 
-### Categories for Support / PS Reports (Type 1)
+> **Note:** One unified taxonomy applies to both artifact types; it was validated against all six Control Set artifacts (CS-01 through CS-06). Earlier drafts defined additional Type-1-specific codes (ISS, RES, BLK) that did not occur in the final extraction and were removed.
 
-| Code | Category | Definition | Example |
-|------|----------|------------|---------|
-| ISS | **Issue / Problem** | The problem or symptom that triggered the support engagement | — |
-| RES | **Resolution** | The concrete action(s) taken to resolve the issue | — |
-| RAT | **Rationale** | Why a specific approach was chosen over alternatives | — |
-| TEC | **Technical Detail** | Specific technical facts relevant to understanding the resolution | — |
-| BLK | **Blocker / Constraint** | Factors that complicated or delayed resolution | — |
-| CFG | **Configuration Change** | Settings or parameters modified as part of the resolution | — |
-
-> **Note:** Type 1 categories will be validated once CS-01 through CS-03 are anonymized. The Type 2 categories above have been validated against CS-04, CS-05, and CS-06.
 
 ---
 
